@@ -1,0 +1,1997 @@
+Meu aplicativo 
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>AuraVest</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+<style>
+/* ═══════════ RESET ═══════════ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; overflow: hidden; font-family: 'DM Sans', sans-serif; -webkit-font-smoothing: antialiased; background: #b0b8c4; }
+
+/* ═══════════ TOKENS ═══════════ */
+:root {
+  --navy:    #0c1a2e;
+  --navy2:   #142236;
+  --blue:    #1e3a5f;
+  --blue2:   #2c5d8a;
+  --blue3:   #ddeaf8;
+  --gold:    #c9a96e;
+  --gold2:   #e8c98a;
+  --cream:   #f8f4ee;
+  --white:   #ffffff;
+  --g1: #111827; --g2: #374151; --g3: #6b7280;
+  --g4: #9ca3af; --g5: #e5e7eb; --g6: #f3f4f6;
+  --green:   #15803d; --greenbg: #f0fdf4;
+  --red:     #b91c1c; --redbg:   #fef2f2;
+  --orange:  #b45309; --orangebg:#fffbeb;
+  --r: 16px;
+  --sh:  0 1px 12px rgba(12,26,46,.08);
+  --sh2: 0 4px 24px rgba(12,26,46,.14);
+  --sh3: 0 8px 40px rgba(12,26,46,.20);
+}
+
+/* ═══════════ VIEWPORT ═══════════ */
+#vp {
+  position: fixed; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+}
+
+/* ═══════════ PHONE SHELL ═══════════ */
+#phone {
+  width: 393px; height: 852px;
+  background: var(--white);
+  border-radius: 50px;
+  overflow: hidden;
+  display: flex; flex-direction: column;
+  box-shadow: 0 48px 120px rgba(0,0,0,.32),
+              0 0 0 1.5px rgba(0,0,0,.10),
+              inset 0 0 0 1px rgba(255,255,255,.30);
+  position: relative;
+}
+@media (max-height: 900px) {
+  #phone { height: calc(100dvh - 32px); border-radius: 38px; }
+}
+@media (max-width: 420px) {
+  #vp { background: var(--white); }
+  #phone { width: 100%; height: 100%; border-radius: 0; box-shadow: none; }
+}
+
+/* ═══════════ STATUS BAR ═══════════ */
+.sb {
+  height: 44px; background: var(--navy);
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 24px; flex-shrink: 0; z-index: 100;
+}
+.sb-time { color: #fff; font-size: 15px; font-weight: 600; }
+.sb-icons { display: flex; gap: 5px; align-items: center; color: rgba(255,255,255,.7); font-size: 12px; }
+
+/* ═══════════ SCREEN STACK ═══════════ */
+#stack { flex: 1; position: relative; overflow: hidden; }
+.sc {
+  position: absolute; inset: 0;
+  overflow-y: auto; overflow-x: hidden;
+  scrollbar-width: none;
+  background: var(--white);
+  transform: translateX(100%);
+  transition: transform .3s cubic-bezier(.4,0,.2,1);
+  will-change: transform;
+  z-index: 1;
+}
+.sc::-webkit-scrollbar { display: none; }
+.sc.active  { transform: translateX(0);   z-index: 2; }
+.sc.behind  { transform: translateX(-25%); z-index: 1; }
+
+/* ═══════════ BOTTOM NAV ═══════════ */
+#bnav {
+  height: 72px; background: var(--white);
+  border-top: 1px solid rgba(0,0,0,.07);
+  display: flex; align-items: center; justify-content: space-around;
+  padding: 0 4px 4px; flex-shrink: 0;
+  box-shadow: 0 -4px 20px rgba(0,0,0,.04);
+  position: relative; z-index: 50;
+}
+.ni {
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  cursor: pointer; padding: 6px 14px; border-radius: 14px;
+  transition: background .15s; -webkit-tap-highlight-color: transparent;
+  position: relative;
+}
+.ni:active { background: var(--blue3); }
+.ni.on .ni-ic, .ni.on .ni-lb { color: var(--blue2); }
+.ni-ic { font-size: 22px; color: #bdc4d0; transition: color .15s; line-height: 1.1; position: relative; }
+.ni-lb { font-size: 10px; font-weight: 500; color: #bdc4d0; transition: color .15s; }
+.nbdg {
+  position: absolute; top: -4px; right: -8px;
+  background: var(--red); color: #fff;
+  font-size: 9px; font-weight: 700;
+  min-width: 16px; height: 16px; border-radius: 8px;
+  display: flex; align-items: center; justify-content: center; padding: 0 3px;
+}
+
+/* ═══════════ TOP BAR ═══════════ */
+.tbar {
+  position: sticky; top: 0; z-index: 30;
+  background: rgba(255,255,255,.95); backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(0,0,0,.06);
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 18px; flex-shrink: 0;
+}
+.bk {
+  width: 38px; height: 38px; border-radius: 50%;
+  background: var(--navy);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; font-size: 17px; color: #fff; flex-shrink: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+.bk:active { opacity: .7; }
+.tbar-ttl { font-family: 'Cormorant Garamond', serif; font-size: 20px; font-weight: 400; color: var(--g1); flex: 1; }
+.tbar-act { font-size: 13px; color: var(--blue2); font-weight: 600; cursor: pointer; white-space: nowrap; padding: 4px; }
+
+/* ═══════════ BUTTONS ═══════════ */
+.btn {
+  border: none; border-radius: 14px; height: 52px;
+  font-size: 15px; font-weight: 600; cursor: pointer;
+  width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px;
+  font-family: 'DM Sans', sans-serif;
+  transition: transform .1s, opacity .1s;
+  -webkit-tap-highlight-color: transparent;
+}
+.btn:active { transform: scale(.98); opacity: .88; }
+.btn-navy  { background: var(--navy);   color: #fff; }
+.btn-wa    { background: #25d366;        color: #fff; box-shadow: 0 4px 16px rgba(37,211,102,.3); }
+.btn-ghost { background: transparent;   color: var(--navy); border: 1.5px solid var(--navy); }
+.btn-red   { background: var(--red);    color: #fff; }
+.btn-sm    { height: 40px; font-size: 13px; border-radius: 10px; }
+
+/* ═══════════ TAGS ═══════════ */
+.tag { display: inline-flex; align-items: center; padding: 3px 8px; border-radius: 7px; font-size: 11px; font-weight: 700; letter-spacing: .3px; white-space: nowrap; }
+.t-red    { background: var(--redbg);    color: var(--red); }
+.t-green  { background: var(--greenbg);  color: var(--green); }
+.t-blue   { background: var(--blue3);    color: var(--blue2); }
+.t-gold   { background: #fdf8ee;         color: #92680a; }
+.t-navy   { background: var(--navy);     color: #fff; }
+.t-orange { background: var(--orangebg); color: var(--orange); }
+
+/* ═══════════ FORM ═══════════ */
+.fg   { margin-bottom: 14px; }
+.fl   { display: block; font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--g3); margin-bottom: 6px; }
+.fi   { width: 100%; background: var(--white); border: 1.5px solid var(--g5); border-radius: 11px; padding: 12px 15px; font-size: 15px; font-family: 'DM Sans', sans-serif; color: var(--g1); outline: none; transition: border-color .18s; -webkit-appearance: none; appearance: none; }
+.fi:focus { border-color: var(--blue2); }
+.fi.ta { min-height: 80px; resize: vertical; }
+.f2   { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.ferr { font-size: 12px; color: var(--red); margin-top: 4px; display: none; }
+
+/* ═══════════ TOAST ═══════════ */
+#toasts {
+  position: absolute; bottom: 84px; left: 50%; transform: translateX(-50%);
+  z-index: 999; display: flex; flex-direction: column; align-items: center; gap: 7px;
+  pointer-events: none; width: 340px;
+}
+.toast-msg {
+  background: var(--navy); color: #fff;
+  padding: 11px 18px; border-radius: 13px;
+  font-size: 14px; font-weight: 500; white-space: nowrap;
+  box-shadow: var(--sh3);
+  opacity: 0; transform: translateY(8px); transition: all .26s;
+  display: flex; align-items: center; gap: 8px;
+}
+.toast-msg.show { opacity: 1; transform: translateY(0); }
+
+/* ═══════════ MODAL ═══════════ */
+#modal-bg {
+  position: absolute; inset: 0;
+  background: rgba(0,0,0,.52); z-index: 200;
+  display: none; align-items: flex-end;
+  backdrop-filter: blur(3px);
+}
+#modal-bg.open { display: flex; }
+#modal-box {
+  background: #fff; border-radius: 24px 24px 0 0;
+  width: 100%; max-height: 78%; overflow-y: auto;
+  padding: 0 0 24px;
+}
+.modal-drag { width: 36px; height: 4px; background: var(--g5); border-radius: 2px; margin: 10px auto 4px; }
+.modal-ttl  { font-family: 'Cormorant Garamond', serif; font-size: 22px; font-weight: 400; color: var(--g1); padding: 10px 20px 14px; }
+
+/* ═══════════ EMPTY STATE ═══════════ */
+.empty { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 52px 28px; gap: 12px; text-align: center; }
+.empty-ic { font-size: 58px; opacity: .32; }
+.empty-h  { font-family: 'Cormorant Garamond', serif; font-size: 22px; color: var(--g1); font-weight: 400; }
+.empty-s  { font-size: 14px; color: var(--g4); line-height: 1.55; }
+
+/* ═══════════ SPLASH ═══════════ */
+#sc-splash { background: var(--navy); display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.sp-orb {
+  width: 112px; height: 112px; border-radius: 50%;
+  background: radial-gradient(circle at 38% 38%, rgba(201,169,110,.4), transparent 66%);
+  border: 1px solid rgba(201,169,110,.2);
+  display: flex; align-items: center; justify-content: center;
+  position: relative; margin-bottom: 28px;
+}
+.sp-orb::before, .sp-orb::after {
+  content: ''; position: absolute; border-radius: 50%;
+  border: 1px solid rgba(201,169,110,.12);
+  animation: por 2.8s ease-out infinite;
+}
+.sp-orb::before { width: 158px; height: 158px; }
+.sp-orb::after  { width: 202px; height: 202px; animation-delay: .75s; }
+@keyframes por { 0% { transform: scale(.82); opacity: .6; } 100% { transform: scale(1.3); opacity: 0; } }
+.sp-logo { font-family: 'Cormorant Garamond', serif; font-size: 44px; font-weight: 300; color: #fff; letter-spacing: 8px; margin-bottom: 8px; }
+.sp-sub  { font-size: 11px; letter-spacing: 3.5px; color: var(--gold); text-transform: uppercase; margin-bottom: 52px; }
+.sp-bar  { width: 56px; height: 3px; background: rgba(255,255,255,.1); border-radius: 2px; overflow: hidden; }
+.sp-bar::after { content: ''; display: block; height: 100%; width: 0; background: var(--gold); border-radius: 2px; animation: spl 2s ease forwards; }
+@keyframes spl { to { width: 100%; } }
+
+/* ═══════════ LOGIN ═══════════ */
+#sc-login { background: var(--white); }
+.log-hero { background: var(--navy); padding: 38px 28px 32px; text-align: center; position: relative; overflow: hidden; }
+.log-hero::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at 70% 30%, rgba(93,155,213,.25), transparent 60%); }
+.log-logo { font-family: 'Cormorant Garamond', serif; font-size: 38px; font-weight: 300; color: #fff; letter-spacing: 7px; position: relative; z-index: 1; margin-bottom: 5px; }
+.log-sub  { font-size: 11px; letter-spacing: 3px; color: var(--gold); text-transform: uppercase; position: relative; z-index: 1; }
+.log-body { padding: 26px 22px 32px; }
+.log-tabs { display: flex; background: var(--g6); border-radius: 12px; padding: 4px; margin-bottom: 20px; }
+.ltab { flex: 1; text-align: center; padding: 9px; border-radius: 9px; font-size: 14px; font-weight: 500; color: var(--g4); cursor: pointer; transition: all .18s; }
+.ltab.on { background: #fff; color: var(--navy); box-shadow: var(--sh); }
+.log-hint { background: var(--blue3); border-radius: 11px; padding: 12px 14px; font-size: 13px; color: var(--blue2); line-height: 1.55; margin-bottom: 16px; border: 1px solid rgba(44,93,138,.15); }
+.divider { display: flex; align-items: center; gap: 12px; margin: 14px 0; color: var(--g4); font-size: 12px; }
+.divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: var(--g5); }
+.pw-wrap { position: relative; }
+.pw-eye  { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); cursor: pointer; font-size: 16px; color: var(--g4); -webkit-tap-highlight-color: transparent; }
+
+/* ═══════════ ONBOARDING ═══════════ */
+#sc-ob { background: var(--cream); }
+.ob-wrap { padding: 26px 22px 32px; min-height: 100%; display: flex; flex-direction: column; }
+.ob-prog { display: flex; gap: 5px; margin-bottom: 32px; }
+.ob-p { height: 4px; flex: 1; border-radius: 2px; background: #ddd8ce; transition: background .3s; }
+.ob-p.d { background: var(--navy); } .ob-p.c { background: var(--blue2); }
+.ob-step { font-size: 11px; color: var(--g4); letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 8px; }
+.ob-h    { font-family: 'Cormorant Garamond', serif; font-size: 28px; font-weight: 400; color: var(--navy); line-height: 1.2; margin-bottom: 7px; }
+.ob-s    { font-size: 14px; color: var(--g2); line-height: 1.6; margin-bottom: 24px; }
+.ob-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+.ob-c    { background: #fff; border-radius: var(--r); padding: 16px 12px; cursor: pointer; border: 2.5px solid transparent; transition: all .16s; text-align: center; box-shadow: var(--sh); }
+.ob-c.s  { border-color: var(--blue2); background: var(--blue3); }
+.ob-c:active { transform: scale(.97); }
+.ob-em   { font-size: 28px; margin-bottom: 7px; }
+.ob-nm   { font-size: 13px; font-weight: 500; color: var(--g1); }
+.ob-chips{ display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+.chip    { padding: 8px 16px; border-radius: 22px; background: #fff; border: 1.5px solid var(--g5); font-size: 13px; font-weight: 500; color: var(--g2); cursor: pointer; transition: all .16s; }
+.chip.s  { background: var(--navy); color: #fff; border-color: var(--navy); }
+.ob-nav  { display: flex; gap: 10px; margin-top: auto; padding-top: 16px; }
+
+/* ═══════════ HOME ═══════════ */
+#sc-home { background: var(--white); }
+.hdr { background: var(--navy); padding: 16px 20px 0; position: sticky; top: 0; z-index: 30; }
+.hdr-top { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 12px; }
+.hdr-greet { font-size: 12px; color: rgba(255,255,255,.48); margin-bottom: 2px; }
+.hdr-logo  { font-family: 'Cormorant Garamond', serif; font-size: 26px; font-weight: 300; color: #fff; letter-spacing: 5px; }
+.hdr-acts  { display: flex; gap: 7px; padding-top: 2px; }
+.ib { width: 37px; height: 37px; border-radius: 50%; background: rgba(255,255,255,.1); display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 17px; color: #fff; transition: background .15s; position: relative; -webkit-tap-highlight-color: transparent; }
+.ib:active { background: rgba(255,255,255,.22); }
+.srch { background: rgba(255,255,255,.1); border-radius: 12px; padding: 10px 16px; display: flex; align-items: center; gap: 9px; margin-bottom: 14px; cursor: pointer; }
+.srch-ph { font-size: 13px; color: rgba(255,255,255,.4); }
+.bnr { height: 188px; background: linear-gradient(148deg, #0c1f3e, #183860); position: relative; overflow: hidden; display: flex; align-items: flex-end; padding: 20px; }
+.bnr-glow { position: absolute; inset: 0; background: radial-gradient(ellipse at 76% 26%, rgba(93,155,213,.3), transparent 52%), radial-gradient(ellipse at 16% 86%, rgba(201,169,110,.16), transparent 44%); }
+.bnr-txt { position: relative; z-index: 2; }
+.bnr-ey  { font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: var(--gold); margin-bottom: 5px; }
+.bnr-h   { font-family: 'Cormorant Garamond', serif; font-size: 26px; color: #fff; font-weight: 300; line-height: 1.14; margin-bottom: 10px; }
+.bnr-btn { background: var(--gold); color: var(--navy); border: none; border-radius: 8px; padding: 7px 18px; font-size: 12px; font-weight: 700; letter-spacing: 1px; cursor: pointer; font-family: 'DM Sans', sans-serif; }
+.bnr-deco{ position: absolute; right: -6px; top: 50%; transform: translateY(-50%); font-size: 90px; opacity: .15; pointer-events: none; }
+.sec { padding: 18px 20px 4px; }
+.sec-hdr { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 12px; }
+.sec-ttl { font-family: 'Cormorant Garamond', serif; font-size: 21px; font-weight: 400; color: var(--g1); }
+.sec-lnk { font-size: 12px; color: var(--blue2); font-weight: 600; cursor: pointer; }
+.cats { padding: 0 20px; display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; margin-bottom: 2px; }
+.cats::-webkit-scrollbar { display: none; }
+.cat { flex-shrink: 0; padding: 8px 17px; border-radius: 22px; background: #fff; border: 1.5px solid var(--g5); font-size: 13px; font-weight: 500; color: var(--g3); cursor: pointer; white-space: nowrap; transition: all .16s; }
+.cat.on { background: var(--navy); color: #fff; border-color: var(--navy); }
+.pgrid { padding: 4px 16px 0; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.prow  { padding: 0 20px; display: flex; gap: 12px; overflow-x: auto; scrollbar-width: none; padding-bottom: 4px; }
+.prow::-webkit-scrollbar { display: none; }
+
+/* ═══════════ PRODUCT CARD ═══════════ */
+.pc { background: #fff; border-radius: var(--r); overflow: hidden; cursor: pointer; transition: transform .16s, box-shadow .16s; box-shadow: var(--sh); -webkit-tap-highlight-color: transparent; }
+.pc:active { transform: scale(.975); }
+.pc.wide { width: 172px; flex-shrink: 0; }
+.pc-img { position: relative; aspect-ratio: 3/4; display: flex; align-items: center; justify-content: center; font-size: 60px; overflow: hidden; }
+.pc-fav { position: absolute; top: 8px; right: 8px; width: 30px; height: 30px; background: rgba(255,255,255,.92); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; cursor: pointer; z-index: 2; box-shadow: var(--sh); -webkit-tap-highlight-color: transparent; }
+.pc-fav:active { transform: scale(1.3); }
+.pc-bdg { position: absolute; top: 8px; left: 8px; z-index: 2; }
+.pc-info{ padding: 10px 12px 12px; }
+.pc-nm  { font-size: 13px; font-weight: 600; color: var(--g1); margin-bottom: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pc-pr  { font-size: 14px; font-weight: 700; color: var(--navy); }
+.pc-op  { font-size: 11px; color: var(--g4); text-decoration: line-through; margin-left: 5px; }
+.pc-st  { font-size: 11px; color: var(--gold); margin-top: 3px; }
+
+/* BG SWATCHES */
+.bg-blush  { background: linear-gradient(145deg, #f2d8d8, #e8c4c0); }
+.bg-sage   { background: linear-gradient(145deg, #cde0d5, #bbd8cc); }
+.bg-lav    { background: linear-gradient(145deg, #dbd2ec, #c9c0df); }
+.bg-sky    { background: linear-gradient(145deg, #cce0f5, #bcd4ee); }
+.bg-sand   { background: linear-gradient(145deg, #ede0c8, #e4d4b8); }
+.bg-mauve  { background: linear-gradient(145deg, #e8d2dc, #dcc4cc); }
+.bg-mint   { background: linear-gradient(145deg, #c8e8dc, #b8dcd0); }
+.bg-peach  { background: linear-gradient(145deg, #f5e0cc, #eed4bc); }
+.bg-ivory  { background: linear-gradient(145deg, #f0ece0, #e4dcd0); }
+.bg-slate  { background: linear-gradient(145deg, #d0d8e8, #c2cce0); }
+
+/* ═══════════ PRODUCT PAGE ═══════════ */
+#sc-product { background: #fff; }
+.pgal { position: relative; aspect-ratio: 4/5; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+.pgal-img  { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 108px; }
+.pgal-back { position: absolute; top: 14px; left: 14px; width: 38px; height: 38px; border-radius: 50%; background: rgba(0,0,0,.3); display: flex; align-items: center; justify-content: center; cursor: pointer; color: #fff; font-size: 17px; z-index: 5; backdrop-filter: blur(6px); }
+.pgal-fav  { position: absolute; top: 14px; right: 14px; width: 40px; height: 40px; background: rgba(255,255,255,.92); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; cursor: pointer; z-index: 5; box-shadow: var(--sh); }
+.pgal-fav:active { transform: scale(1.2); }
+.gdots { position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%); display: flex; gap: 5px; }
+.gd    { height: 5px; width: 5px; border-radius: 3px; background: rgba(255,255,255,.5); transition: all .2s; }
+.gd.on { width: 16px; background: #fff; }
+.pbody { padding: 16px 20px 130px; }
+.p-cat    { font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--g4); margin-bottom: 4px; }
+.p-ttl    { font-family: 'Cormorant Garamond', serif; font-size: 27px; font-weight: 400; color: var(--g1); line-height: 1.2; margin-bottom: 8px; }
+.p-pricing{ display: flex; align-items: center; gap: 9px; margin-bottom: 4px; flex-wrap: wrap; }
+.p-price  { font-size: 23px; font-weight: 700; color: var(--navy); }
+.p-oldp   { font-size: 14px; color: var(--g4); text-decoration: line-through; }
+.p-stars  { font-size: 13px; color: var(--gold); margin-bottom: 18px; }
+.p-stars span { color: var(--g3); font-size: 12px; }
+.vlbl  { font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--g3); margin-bottom: 9px; }
+.swatches { display: flex; gap: 9px; margin-bottom: 18px; flex-wrap: wrap; }
+.sw    { width: 30px; height: 30px; border-radius: 50%; cursor: pointer; border: 3px solid transparent; transition: border-color .16s; }
+.sw.on { border-color: var(--navy); }
+.sizes { display: flex; gap: 7px; margin-bottom: 18px; flex-wrap: wrap; }
+.sz    { min-width: 44px; height: 44px; padding: 0 8px; border-radius: 10px; border: 1.5px solid var(--g5); background: #fff; font-size: 13px; font-weight: 600; color: var(--g1); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all .16s; position: relative; }
+.sz.on { background: var(--navy); color: #fff; border-color: var(--navy); }
+.sz.esg{ color: #ccc; text-decoration: line-through; cursor: not-allowed; background: var(--g6); }
+.urgency { display: inline-flex; align-items: center; gap: 6px; background: var(--orangebg); border: 1px solid #fcd34d; border-radius: 9px; padding: 6px 12px; font-size: 12px; font-weight: 600; color: var(--orange); margin-bottom: 16px; }
+.p-desc { font-size: 14px; color: var(--g2); line-height: 1.75; margin-bottom: 18px; }
+.irow  { display: flex; align-items: center; gap: 10px; padding: 11px 14px; border-radius: 11px; font-size: 13px; font-weight: 500; margin-bottom: 7px; }
+.pcta  { position: absolute; bottom: 0; left: 0; right: 0; padding: 11px 20px 13px; background: rgba(255,255,255,.96); backdrop-filter: blur(14px); border-top: 1px solid rgba(0,0,0,.06); display: flex; gap: 10px; z-index: 30; }
+.qty-c { display: flex; align-items: center; gap: 11px; background: var(--blue3); border-radius: 12px; padding: 0 14px; flex-shrink: 0; }
+.qbtn  { font-size: 20px; cursor: pointer; color: var(--navy); padding: 4px; }
+.qval  { font-size: 15px; font-weight: 700; color: var(--navy); min-width: 20px; text-align: center; }
+
+/* ═══════════ CART ═══════════ */
+#sc-cart { background: var(--g6); }
+.cart-hdr{ background: #fff; padding: 16px 20px; border-bottom: 1px solid var(--g5); }
+.cart-ttl{ font-family: 'Cormorant Garamond', serif; font-size: 27px; font-weight: 400; }
+.cart-n  { font-size: 13px; color: var(--g4); margin-top: 2px; }
+.clist   { padding: 12px 16px; display: flex; flex-direction: column; gap: 9px; }
+.ci      { display: flex; gap: 12px; background: #fff; border-radius: var(--r); padding: 12px; box-shadow: var(--sh); }
+.ci-img  { width: 66px; height: 83px; border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: 32px; flex-shrink: 0; }
+.ci-body { flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: space-between; }
+.ci-nm   { font-size: 14px; font-weight: 600; color: var(--g1); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ci-var  { font-size: 12px; color: var(--g4); margin-top: 2px; }
+.ci-row  { display: flex; align-items: center; justify-content: space-between; margin-top: 6px; }
+.ci-pr   { font-size: 15px; font-weight: 700; color: var(--navy); }
+.ci-qc   { display: flex; align-items: center; gap: 8px; }
+.cqb     { width: 27px; height: 27px; border-radius: 7px; background: var(--blue3); border: none; font-size: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--navy); font-weight: 700; }
+.cqv     { font-size: 14px; font-weight: 700; min-width: 20px; text-align: center; }
+.ci-del  { font-size: 17px; cursor: pointer; color: var(--g5); padding: 4px; transition: color .15s; }
+.ci-del:active { color: var(--red); }
+.csum    { margin: 0 16px 11px; background: var(--navy); border-radius: var(--r); padding: 17px 20px; color: #fff; }
+.sum-r   { display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 8px; }
+.sum-lbl { opacity: .6; }
+.sum-tot { font-size: 17px; font-weight: 700; padding-top: 9px; border-top: 1px solid rgba(255,255,255,.15); }
+
+/* ═══════════ PROFILE ═══════════ */
+#sc-profile { background: var(--g6); }
+.prof-hero { background: linear-gradient(148deg, var(--navy), var(--navy2)); padding: 24px 20px 20px; display: flex; align-items: center; gap: 14px; }
+.av        { width: 58px; height: 58px; border-radius: 50%; background: var(--gold); display: flex; align-items: center; justify-content: center; font-size: 21px; color: #fff; font-weight: 700; flex-shrink: 0; font-family: 'Cormorant Garamond', serif; border: 2px solid rgba(255,255,255,.18); }
+.prof-nm   { font-family: 'Cormorant Garamond', serif; font-size: 21px; color: #fff; font-weight: 400; }
+.prof-em   { font-size: 12px; color: rgba(255,255,255,.45); margin-top: 3px; }
+.prof-edit { margin-left: auto; background: rgba(255,255,255,.13); border: none; border-radius: 9px; padding: 7px 13px; font-size: 12px; color: #fff; cursor: pointer; font-family: 'DM Sans', sans-serif; flex-shrink: 0; }
+.pstats    { display: flex; background: #fff; border-bottom: 1px solid var(--g5); }
+.pst       { flex: 1; text-align: center; padding: 13px 0; border-right: 1px solid var(--g5); }
+.pst:last-child { border: none; }
+.pst-v     { font-size: 19px; font-weight: 700; color: var(--navy); }
+.pst-l     { font-size: 11px; color: var(--g4); margin-top: 2px; }
+.slbl      { font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--g4); padding: 16px 20px 8px; display: block; }
+.mlst      { padding: 0 16px 8px; display: flex; flex-direction: column; gap: 3px; }
+.mi        { display: flex; align-items: center; gap: 12px; padding: 13px 14px; background: #fff; border-radius: 12px; cursor: pointer; transition: background .15s; -webkit-tap-highlight-color: transparent; }
+.mi:active { background: var(--blue3); }
+.mi-ic     { font-size: 18px; width: 22px; text-align: center; flex-shrink: 0; }
+.mi-tx     { flex: 1; font-size: 14px; font-weight: 500; color: var(--g1); }
+.mi-ar     { font-size: 16px; color: var(--g5); }
+.mi-bdg    { font-size: 10px; font-weight: 700; background: var(--red); color: #fff; padding: 2px 7px; border-radius: 8px; }
+.mi-red .mi-tx { color: var(--red); }
+
+/* ═══════════ ORDERS ═══════════ */
+.oc     { background: #fff; border-radius: var(--r); padding: 14px 16px; box-shadow: var(--sh); }
+.oc-t   { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+.oc-id  { font-size: 14px; font-weight: 700; color: var(--g1); }
+.oc-dt  { font-size: 12px; color: var(--g4); }
+.oc-its { font-size: 13px; color: var(--g2); margin-bottom: 9px; line-height: 1.5; }
+.oc-b   { display: flex; align-items: center; justify-content: space-between; }
+.oc-vl  { font-size: 15px; font-weight: 700; color: var(--navy); }
+
+/* ═══════════ ADMIN ═══════════ */
+#sc-admin { background: #eef0f5; }
+.adm-hdr  { background: var(--navy); padding: 16px 20px; }
+.adm-top  { display: flex; align-items: center; justify-content: space-between; margin-bottom: 3px; }
+.adm-logo { font-family: 'Cormorant Garamond', serif; font-size: 22px; color: #fff; font-weight: 300; letter-spacing: 2.5px; }
+.adm-bdg  { background: var(--gold); color: var(--navy); font-size: 10px; font-weight: 800; padding: 3px 9px; border-radius: 10px; letter-spacing: 1px; }
+.adm-sub  { font-size: 12px; color: rgba(255,255,255,.4); }
+.kgrid    { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 13px 16px 4px; }
+.kpi      { background: #fff; border-radius: var(--r); padding: 13px; box-shadow: var(--sh); }
+.kpi-lbl  { font-size: 10px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--g4); margin-bottom: 6px; }
+.kpi-v    { font-size: 24px; font-weight: 700; color: var(--navy); }
+.kpi-d    { font-size: 12px; margin-top: 3px; }
+.ku { color: var(--green); } .kd { color: var(--red); }
+.adm-sec  { font-size: 13px; font-weight: 700; color: var(--g1); padding: 13px 16px 8px; }
+.aacts    { padding: 0 16px 4px; display: flex; flex-direction: column; gap: 7px; }
+.aa       { background: #fff; border-radius: 12px; padding: 12px 14px; display: flex; align-items: center; gap: 12px; cursor: pointer; box-shadow: var(--sh); transition: box-shadow .16s; -webkit-tap-highlight-color: transparent; }
+.aa:active{ box-shadow: var(--sh2); }
+.aa-ic    { font-size: 19px; width: 38px; height: 38px; background: var(--blue3); border-radius: 9px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.aa-nm    { font-size: 14px; font-weight: 600; color: var(--g1); }
+.aa-s     { font-size: 12px; color: var(--g4); margin-top: 2px; }
+.rods     { padding: 0 16px 20px; display: flex; flex-direction: column; gap: 7px; }
+.ao       { background: #fff; border-radius: 11px; padding: 11px 14px; display: flex; align-items: center; gap: 11px; box-shadow: var(--sh); cursor: pointer; }
+.ao:active{ box-shadow: var(--sh2); }
+.ao-inf   { flex: 1; min-width: 0; }
+.ao-nm    { font-size: 13px; font-weight: 700; color: var(--g1); }
+.ao-cl    { font-size: 12px; color: var(--g4); margin-top: 2px; }
+
+/* ADMIN FORMS */
+.fw       { padding: 14px 16px; }
+.stkg     { display: grid; grid-template-columns: repeat(5,1fr); gap: 7px; }
+
+/* ── UPLOAD DE FOTOS ── */
+.upload-area {
+  border: 2px dashed var(--g5); border-radius: 12px; padding: 20px 16px;
+  text-align: center; cursor: pointer; transition: border-color .2s, background .2s;
+  position: relative; background: var(--g6);
+}
+.upload-area:hover, .upload-area.drag { border-color: var(--blue2); background: var(--blue3); }
+.upload-area input[type="file"] {
+  position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;
+}
+.upload-ic  { font-size: 28px; margin-bottom: 6px; }
+.upload-lbl { font-size: 13px; font-weight: 600; color: var(--g2); margin-bottom: 3px; }
+.upload-sub { font-size: 12px; color: var(--g4); }
+.img-prev-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; margin-top: 10px; }
+.img-prev-item { position: relative; aspect-ratio: 1; border-radius: 10px; overflow: hidden; background: var(--g5); }
+.img-prev-item img { width: 100%; height: 100%; object-fit: cover; }
+.img-prev-del { position: absolute; top: 4px; right: 4px; width: 22px; height: 22px; background: rgba(0,0,0,.55); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; cursor: pointer; color: #fff; }
+.img-prev-main { border: 2.5px solid var(--gold); }
+.img-main-badge { position: absolute; bottom: 4px; left: 4px; background: var(--gold); color: var(--navy); font-size: 9px; font-weight: 700; padding: 2px 6px; border-radius: 5px; letter-spacing: .4px; }
+.stki     { text-align: center; }
+.stki label{ display: block; font-size: 10px; font-weight: 700; color: var(--g3); margin-bottom: 4px; }
+.stki input{ width: 100%; text-align: center; padding: 7px 2px; border: 1.5px solid var(--g5); border-radius: 9px; font-size: 14px; font-weight: 700; color: var(--navy); background: #fff; outline: none; font-family: 'DM Sans', sans-serif; }
+.stki input:focus { border-color: var(--blue2); }
+
+.sk-card  { background: #fff; border-radius: var(--r); padding: 13px 15px; box-shadow: var(--sh); margin-bottom: 9px; }
+.sk-nm    { font-size: 14px; font-weight: 700; color: var(--g1); margin-bottom: 10px; display: flex; align-items: center; gap: 7px; flex-wrap: wrap; }
+.sk-rows  { display: flex; flex-direction: column; gap: 6px; }
+.sk-row   { display: flex; align-items: center; justify-content: space-between; padding: 6px 11px; background: var(--g6); border-radius: 8px; }
+.sk-rn    { font-size: 13px; color: var(--g2); font-weight: 500; display: flex; align-items: center; gap: 6px; }
+.sqc      { display: flex; align-items: center; gap: 8px; }
+.sqb      { width: 27px; height: 27px; border-radius: 7px; background: var(--blue3); border: none; font-size: 15px; cursor: pointer; color: var(--navy); font-weight: 700; display: flex; align-items: center; justify-content: center; }
+.sqv      { font-size: 13px; font-weight: 700; min-width: 24px; text-align: center; color: var(--g1); }
+
+.apc      { background: #fff; border-radius: var(--r); padding: 12px 14px; box-shadow: var(--sh); margin-bottom: 9px; display: flex; align-items: center; gap: 12px; }
+.apc-img  { width: 50px; height: 63px; border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: 24px; flex-shrink: 0; }
+.apc-inf  { flex: 1; min-width: 0; }
+.apc-nm   { font-size: 14px; font-weight: 700; color: var(--g1); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.apc-cat  { font-size: 12px; color: var(--g4); margin-top: 1px; }
+.apc-pr   { font-size: 14px; font-weight: 700; color: var(--navy); margin-top: 3px; }
+.apc-acts { display: flex; gap: 6px; }
+.apbtn    { width: 32px; height: 32px; border-radius: 9px; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 14px; }
+.apbtn:active { opacity: .7; }
+
+.ali      { background: #fff; border-radius: 12px; padding: 12px 15px; box-shadow: var(--sh); display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
+.ali-av   { width: 36px; height: 36px; border-radius: 50%; background: var(--gold); display: flex; align-items: center; justify-content: center; font-size: 14px; color: #fff; font-weight: 700; font-family: 'Cormorant Garamond', serif; flex-shrink: 0; }
+.ali-inf  { flex: 1; min-width: 0; }
+.ali-em   { font-size: 13px; font-weight: 600; color: var(--g1); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ali-rl   { font-size: 12px; color: var(--g4); margin-top: 2px; }
+.ali-del  { font-size: 17px; cursor: pointer; color: var(--g5); padding: 4px; transition: color .15s; }
+.ali-del:active { color: var(--red); }
+
+/* ORDER CONFIRM */
+#sc-confirm { background: var(--navy); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 32px 26px; text-align: center; }
+.cf-ic { font-size: 60px; margin-bottom: 16px; animation: pop .35s ease; }
+@keyframes pop { 0% { transform: scale(0); } 60% { transform: scale(1.2); } 100% { transform: scale(1); } }
+.cf-h  { font-family: 'Cormorant Garamond', serif; font-size: 31px; color: #fff; font-weight: 300; margin-bottom: 8px; }
+.cf-s  { font-size: 14px; color: rgba(255,255,255,.58); line-height: 1.6; margin-bottom: 26px; }
+.cf-box{ background: rgba(255,255,255,.1); border-radius: var(--r); padding: 15px 17px; width: 100%; text-align: left; margin-bottom: 20px; border: 1px solid rgba(255,255,255,.12); }
+.cf-row{ display: flex; justify-content: space-between; font-size: 13px; color: rgba(255,255,255,.68); margin-bottom: 7px; }
+.cf-row.tot { font-weight: 700; color: #fff; font-size: 15px; padding-top: 9px; border-top: 1px solid rgba(255,255,255,.15); margin-top: 4px; margin-bottom: 0; }
+
+/* PREFS */
+.pref-sec { background: #fff; border-radius: var(--r); margin: 0 16px 11px; padding: 14px; box-shadow: var(--sh); }
+.pref-h   { font-size: 13px; font-weight: 700; color: var(--g1); margin-bottom: 10px; }
+</style>
+</head>
+<body>
+<div id="vp">
+<div id="phone">
+
+  <!-- STATUS BAR -->
+  <div class="sb">
+    <span class="sb-time" id="sb-time">9:41</span>
+    <div class="sb-icons"><span>●●●</span><span>WiFi</span><span>🔋</span></div>
+  </div>
+
+  <!-- SCREEN STACK -->
+  <div id="stack">
+
+    <!-- SPLASH -->
+    <div class="sc active" id="sc-splash">
+      <div style="height:100%;background:var(--navy);display:flex;flex-direction:column;align-items:center;justify-content:center">
+        <div class="sp-orb"><span style="font-size:36px">👗</span></div>
+        <div class="sp-logo">AuraVest</div>
+        <div class="sp-sub">Moda com identidade</div>
+        <div class="sp-bar"></div>
+      </div>
+    </div>
+
+    <!-- LOGIN -->
+    <div class="sc" id="sc-login">
+      <div class="log-hero">
+        <div class="log-logo">AuraVest</div>
+        <div class="log-sub">Sua moda, seu estilo</div>
+      </div>
+      <div class="log-body" id="login-body"></div>
+    </div>
+
+    <!-- ONBOARDING -->
+    <div class="sc" id="sc-ob">
+      <div class="ob-wrap" id="ob-body"></div>
+    </div>
+
+    <!-- HOME -->
+    <div class="sc" id="sc-home">
+      <div class="hdr">
+        <div class="hdr-top">
+          <div>
+            <div class="hdr-greet" id="hgreet">Olá 👋</div>
+            <div class="hdr-logo">AuraVest</div>
+          </div>
+          <div class="hdr-acts">
+            <div class="ib" onclick="go('sc-notifs')">🔔<span class="nbdg" id="nbdg" style="display:none">0</span></div>
+            <div class="ib" onclick="go('sc-profile')">👤</div>
+          </div>
+        </div>
+        <div class="srch" onclick="go('sc-search')">
+          <span>🔍</span><span class="srch-ph">Buscar peças, estilos...</span>
+        </div>
+      </div>
+      <div id="home-body"></div>
+    </div>
+
+    <!-- PRODUCT -->
+    <div class="sc" id="sc-product"><div id="prod-body"></div></div>
+
+    <!-- CART -->
+    <div class="sc" id="sc-cart">
+      <div class="cart-hdr">
+        <div class="cart-ttl">Carrinho</div>
+        <div class="cart-n" id="cart-n">0 itens</div>
+      </div>
+      <div id="cart-body"></div>
+    </div>
+
+    <!-- FAVS -->
+    <div class="sc" id="sc-favs">
+      <div class="cart-hdr"><div class="cart-ttl">Favoritos ❤️</div></div>
+      <div id="favs-body" class="pgrid" style="padding:14px 16px"></div>
+    </div>
+
+    <!-- PROFILE -->
+    <div class="sc" id="sc-profile"><div id="prof-body"></div></div>
+
+    <!-- ORDERS -->
+    <div class="sc" id="sc-orders">
+      <div class="tbar"><div class="bk" onclick="bk()">←</div><div class="tbar-ttl">Meus Pedidos</div></div>
+      <div id="orders-body" style="padding:12px 16px;display:flex;flex-direction:column;gap:9px"></div>
+    </div>
+
+    <!-- ADDRESSES -->
+    <div class="sc" id="sc-addrs">
+      <div class="tbar"><div class="bk" onclick="bk()">←</div><div class="tbar-ttl">Endereços</div></div>
+      <div id="addrs-body" style="padding:12px 16px;display:flex;flex-direction:column;gap:9px"></div>
+    </div>
+
+    <!-- PREFERENCES -->
+    <div class="sc" id="sc-prefs">
+      <div class="tbar"><div class="bk" onclick="bk()">←</div><div class="tbar-ttl">Preferências</div></div>
+      <div id="prefs-body" style="padding-bottom:24px"></div>
+    </div>
+
+    <!-- SUPPORT -->
+    <div class="sc" id="sc-support">
+      <div class="tbar"><div class="bk" onclick="bk()">←</div><div class="tbar-ttl">Suporte</div></div>
+      <div id="support-body" style="padding:12px 16px;display:flex;flex-direction:column;gap:11px"></div>
+    </div>
+
+    <!-- NOTIFICATIONS -->
+    <div class="sc" id="sc-notifs">
+      <div class="tbar"><div class="bk" onclick="bk()">←</div><div class="tbar-ttl">Notificações</div></div>
+      <div id="notifs-body" style="padding:12px 16px;display:flex;flex-direction:column;gap:9px"></div>
+    </div>
+
+    <!-- SEARCH -->
+    <div class="sc" id="sc-search">
+      <div class="tbar">
+        <div class="bk" onclick="bk()">←</div>
+        <div style="flex:1;position:relative">
+          <span style="position:absolute;left:11px;top:50%;transform:translateY(-50%);font-size:15px;pointer-events:none;color:var(--g4)">🔍</span>
+          <input id="srch-inp" class="fi" style="padding-left:36px;margin:0" placeholder="Buscar produtos..." oninput="doSearch(this.value)">
+        </div>
+      </div>
+      <div id="srch-body" class="pgrid" style="padding:12px 16px"></div>
+    </div>
+
+    <!-- EDIT PROFILE -->
+    <div class="sc" id="sc-editprof">
+      <div class="tbar"><div class="bk" onclick="bk()">←</div><div class="tbar-ttl">Editar Perfil</div></div>
+      <div class="fw">
+        <div class="fg"><label class="fl">Nome</label><input class="fi" id="ep-name" placeholder="Seu nome completo"></div>
+        <div class="fg"><label class="fl">E-mail</label><input class="fi" id="ep-email" style="background:var(--g6);color:var(--g4)" readonly></div>
+        <div class="fg"><label class="fl">Telefone</label><input class="fi" id="ep-phone" type="tel" placeholder="(88) 99999-9999"></div>
+        <div class="fg"><label class="fl">Cidade</label><input class="fi" id="ep-city" placeholder="Sua cidade"></div>
+        <button class="btn btn-navy" onclick="saveProf()" style="margin-top:8px">Salvar Alterações</button>
+      </div>
+    </div>
+
+    <!-- ORDER CONFIRM -->
+    <div class="sc" id="sc-confirm">
+      <div class="cf-ic">✅</div>
+      <div class="cf-h">Pedido enviado!</div>
+      <div class="cf-s">Sua mensagem foi enviada ao WhatsApp da Dhandara. Aguarde a confirmação 💖</div>
+      <div class="cf-box" id="cf-detail"></div>
+      <button class="btn btn-ghost" style="border-color:rgba(255,255,255,.3);color:#fff;margin-bottom:10px" onclick="goRoot('sc-home')">← Continuar comprando</button>
+    </div>
+
+    <!-- ADMIN HOME -->
+    <div class="sc" id="sc-admin">
+      <div class="adm-hdr">
+        <div class="adm-top">
+          <div style="display:flex;align-items:center;gap:8px">
+            <div class="bk" style="background:rgba(255,255,255,.12);width:30px;height:30px;font-size:14px" onclick="bk()">←</div>
+            <div class="adm-logo">AuraVest</div>
+          </div>
+          <div class="adm-bdg">ADMIN</div>
+        </div>
+        <div class="adm-sub" id="adm-sub">Painel de gestão</div>
+      </div>
+      <div id="adm-body"></div>
+    </div>
+
+    <!-- ADMIN PRODUCTS -->
+    <div class="sc" id="sc-adm-prods">
+      <div class="tbar">
+        <div class="bk" onclick="bk()">←</div>
+        <div class="tbar-ttl">Produtos</div>
+        <div class="tbar-act" onclick="openAddProd()">+ Novo</div>
+      </div>
+      <div id="adm-prods-body" style="padding:12px 16px"></div>
+    </div>
+
+    <!-- ADMIN ADD/EDIT PRODUCT -->
+    <div class="sc" id="sc-adm-addprod">
+      <div class="tbar"><div class="bk" onclick="bk()">←</div><div class="tbar-ttl" id="addprod-title">Novo Produto</div></div>
+      <div class="fw">
+        <input type="hidden" id="ap-id">
+        <div class="fg"><label class="fl">Nome do produto</label><input class="fi" id="ap-name" placeholder="Ex: Vestido Midi Floral"></div>
+        <div class="f2">
+          <div class="fg"><label class="fl">Preço (R$)</label><input class="fi" id="ap-price" type="number" placeholder="0.00" step="0.01"></div>
+          <div class="fg"><label class="fl">Preço antigo</label><input class="fi" id="ap-op" type="number" placeholder="0.00" step="0.01"></div>
+        </div>
+        <div class="fg"><label class="fl">Categoria</label>
+          <select class="fi" id="ap-cat">
+            <option>Vestidos</option><option>Blazers</option><option>Blusas</option>
+            <option>Calças</option><option>Saias</option><option>Casual</option>
+            <option>Trabalho</option><option>Festa</option><option>Básicos</option>
+          </select>
+        </div>
+        <div class="f2">
+          <div class="fg"><label class="fl">Emoji</label><input class="fi" id="ap-em" placeholder="👗" maxlength="4"></div>
+          <div class="fg"><label class="fl">Fundo</label>
+            <select class="fi" id="ap-bg">
+              <option value="bg-blush">Rosa</option><option value="bg-sage">Sage</option>
+              <option value="bg-lav">Lavanda</option><option value="bg-sky">Azul Céu</option>
+              <option value="bg-sand">Areia</option><option value="bg-mauve">Mauve</option>
+              <option value="bg-mint">Menta</option><option value="bg-peach">Pêssego</option>
+              <option value="bg-ivory">Marfim</option><option value="bg-slate">Slate</option>
+            </select>
+          </div>
+        </div>
+        <div class="fg"><label class="fl">Descrição</label><textarea class="fi ta" id="ap-desc" placeholder="Descreva o produto..."></textarea></div>
+        <div class="fg">
+          <label class="fl">Fotos do Produto</label>
+          <div class="upload-area" id="upload-area">
+            <input type="file" id="ap-imgs" accept="image/*" multiple onchange="handleImgUpload(this)">
+            <div class="upload-ic">📷</div>
+            <div class="upload-lbl">Toque para adicionar fotos</div>
+            <div class="upload-sub">JPG, PNG, WEBP · até 5 fotos</div>
+          </div>
+          <div class="img-prev-grid" id="img-prev-grid"></div>
+        </div>
+        <div class="fg"><label class="fl">Estoque por tamanho</label><div class="stkg" id="stkg"></div></div>
+        <button class="btn btn-navy" id="ap-save" onclick="saveProd()" style="margin-top:4px">Cadastrar Produto</button>
+      </div>
+    </div>
+
+    <!-- ADMIN STOCK -->
+    <div class="sc" id="sc-adm-stock">
+      <div class="tbar"><div class="bk" onclick="bk()">←</div><div class="tbar-ttl">Estoque</div></div>
+      <div id="adm-stock-body" style="padding:12px 16px"></div>
+    </div>
+
+    <!-- ADMIN ORDERS -->
+    <div class="sc" id="sc-adm-orders">
+      <div class="tbar"><div class="bk" onclick="bk()">←</div><div class="tbar-ttl">Todos os Pedidos</div></div>
+      <div id="adm-orders-body" style="padding:12px 16px;display:flex;flex-direction:column;gap:9px"></div>
+    </div>
+
+    <!-- ADMIN MANAGE ADMINS -->
+    <div class="sc" id="sc-adm-admins">
+      <div class="tbar"><div class="bk" onclick="bk()">←</div><div class="tbar-ttl">Administradores</div></div>
+      <div id="adm-admins-body" style="padding:14px 16px"></div>
+    </div>
+
+  </div><!-- /stack -->
+
+  <!-- BOTTOM NAV -->
+  <div id="bnav">
+    <div class="ni on" id="ni-home"   onclick="goRoot('sc-home')">   <div class="ni-ic">🏠</div><div class="ni-lb">Home</div></div>
+    <div class="ni"    id="ni-search" onclick="goRoot('sc-search')"> <div class="ni-ic">🔍</div><div class="ni-lb">Buscar</div></div>
+    <div class="ni"    id="ni-favs"   onclick="goRoot('sc-favs')">   <div class="ni-ic">❤️</div><div class="ni-lb">Salvos</div></div>
+    <div class="ni"    id="ni-cart"   onclick="goRoot('sc-cart')">   <div class="ni-ic">🛒<span class="nbdg" id="cart-bdg" style="display:none">0</span></div><div class="ni-lb">Carrinho</div></div>
+    <div class="ni"    id="ni-prof"   onclick="goRoot('sc-profile')"><div class="ni-ic">👤</div><div class="ni-lb">Perfil</div></div>
+  </div>
+
+  <div id="toasts"></div>
+
+  <!-- MODAL -->
+  <div id="modal-bg" onclick="closeMdl()">
+    <div id="modal-box" onclick="event.stopPropagation()">
+      <div class="modal-drag"></div>
+      <div class="modal-ttl" id="mdl-ttl"></div>
+      <div id="mdl-body" style="padding:0 20px 8px"></div>
+    </div>
+  </div>
+
+</div><!-- /phone -->
+</div><!-- /vp -->
+
+<script>
+/* ═══════════════════════════════════════════════════
+   STORAGE — localStorage persistence
+═══════════════════════════════════════════════════ */
+const S = {
+  g(k, d = null) {
+    try {
+      const v = localStorage.getItem('av4_' + k);
+      return v != null ? JSON.parse(v) : d;
+    } catch { return d; }
+  },
+  s(k, v) {
+    try { localStorage.setItem('av4_' + k, JSON.stringify(v)); } catch {}
+  },
+  d(k) {
+    try { localStorage.removeItem('av4_' + k); } catch {}
+  }
+};
+
+/* ═══════════════════════════════════════════════════
+   ADMIN SYSTEM
+═══════════════════════════════════════════════════ */
+const ADMIN_PASSWORD = 'AURAVESTADM2025';
+const SEED_ADMINS    = ['raissaalncr09@gmail.com', 'dandara05738@gmail.com'];
+
+function getAdmins() {
+  const a = S.g('admins', null);
+  if (a === null) { S.s('admins', SEED_ADMINS); return [...SEED_ADMINS]; }
+  return a;
+}
+
+function isAdminEmail(email) {
+  return getAdmins().map(e => e.toLowerCase()).includes((email || '').toLowerCase());
+}
+
+function isAdmin() {
+  const u = getUser();
+  return u && isAdminEmail(u.email);
+}
+
+function addAdmin(email) {
+  let admins = getAdmins();
+  if (!admins.map(e => e.toLowerCase()).includes(email.toLowerCase())) {
+    admins.push(email);
+    S.s('admins', admins);
+  }
+}
+
+/* ═══════════════════════════════════════════════════
+   SEED PRODUCTS
+═══════════════════════════════════════════════════ */
+const SEED_PRODS = [
+  { id:'p1', name:'Vestido Midi Floral',  price:119.90, op:149.90, cat:'Vestidos', em:'👗', bg:'bg-blush', stars:4.9, rev:127, desc:'Vestido midi em tecido fluido com estampa floral exclusiva. Modelagem soltinha, perfeita para trabalho ou passeio.', stock:{PP:0,P:3,M:2,G:5,GG:4}, colors:['#e8b4b8','#1a1a1a','#f0f0ec','#5b9bd5'] },
+  { id:'p2', name:'Blazer Alfaiataria',   price:249.90, op:null,   cat:'Blazers',  em:'🧥', bg:'bg-sage',  stars:4.8, rev:84,  desc:'Blazer de alfaiataria em crepe premium. Ombreira leve, forro completo e botões dourados.',                     stock:{PP:1,P:4,M:3,G:2,GG:0}, colors:['#1a1a1a','#f0f0ec','#8b7355'] },
+  { id:'p3', name:'Blusa Manga Longa',    price:79.90,  op:null,   cat:'Blusas',   em:'👚', bg:'bg-lav',   stars:4.7, rev:56,  desc:'Blusa de crepe com manga longa e decote V. Caimento impecável.',                                               stock:{PP:5,P:8,M:6,G:7,GG:3}, colors:['#5b9bd5','#e8b4b8','#1a1a1a','#f0f0ec'] },
+  { id:'p4', name:'Calça Linho Premium',  price:139.90, op:null,   cat:'Calças',   em:'👖', bg:'bg-sky',   stars:4.6, rev:43,  desc:'Calça de linho cintura alta, corte reto. Confortável e elegante para o verão.',                                 stock:{PP:2,P:5,M:4,G:3,GG:1}, colors:['#c4a882','#1a1a1a','#f0f0ec'] },
+  { id:'p5', name:'Vestido Linho Básico', price:99.90,  op:117.00, cat:'Vestidos', em:'🌿', bg:'bg-sand',  stars:4.9, rev:201, desc:'Vestido básico de linho com modelagem soltinha e caimento fluido e atemporal.',                                  stock:{PP:3,P:6,M:8,G:5,GG:2}, colors:['#c4a882','#e8b4b8','#1a1a1a'] },
+  { id:'p6', name:'Conjunto Saia + Top',  price:189.90, op:229.90, cat:'Festa',    em:'✨', bg:'bg-mauve', stars:4.8, rev:38,  desc:'Conjunto elegante saia midi + top em acetinado premium. Para eventos e festas.',                                 stock:{PP:1,P:2,M:3,G:2,GG:0}, colors:['#c4a0b4','#1a1a1a','#5b9bd5'] },
+  { id:'p7', name:'Camisa Social Slim',   price:89.90,  op:null,   cat:'Trabalho', em:'👔', bg:'bg-mint',  stars:4.5, rev:61,  desc:'Camisa social slim fit em algodão egípcio. Caimento perfeito para ambientes profissionais.',                    stock:{PP:4,P:7,M:9,G:6,GG:3}, colors:['#f0f0ec','#5b9bd5','#1a1a1a','#e8b4b8'] },
+  { id:'p8', name:'Saia Midi Plissada',   price:109.90, op:null,   cat:'Casual',   em:'🌸', bg:'bg-peach', stars:4.7, rev:92,  desc:'Saia midi plissada em tecido levinho que balança ao caminhar. Cós elástico confortável.',                       stock:{PP:2,P:4,M:5,G:3,GG:1}, colors:['#f0c8a0','#e8b4b8','#1a1a1a'] },
+];
+
+/* ═══════════════════════════════════════════════════
+   DATABASE INIT
+═══════════════════════════════════════════════════ */
+function initDB() {
+  if (!S.g('products'))  S.s('products', SEED_PRODS);
+  if (!S.g('cart'))      S.s('cart', []);
+  if (!S.g('favs'))      S.s('favs', []);
+  if (!S.g('orders'))    S.s('orders', []);
+  if (!S.g('users'))     S.s('users', {});
+  if (!S.g('notifs'))    S.s('notifs', [
+    { id:'n1', ic:'🎉', h:'Bem-vinda à AuraVest!',          s:'Explore nossa coleção exclusiva.',        t:'agora', r:false },
+    { id:'n2', ic:'🔥', h:'20% off: Vestido Midi Floral',   s:'Promoção por tempo limitado!',            t:'2h',    r:false },
+    { id:'n3', ic:'📦', h:'Blazer Alfaiataria chegou!',      s:'Nova peça na categoria Blazers.',         t:'1d',    r:true  },
+  ]);
+  getAdmins(); // seed admin list
+}
+
+function getProds()  { return S.g('products', SEED_PRODS); }
+function getCart()   { return S.g('cart', []); }
+function getFavs()   { return S.g('favs', []); }
+function getOrders() { return S.g('orders', []); }
+function getUser()   { return S.g('user', null); }
+function getNotifs() { return S.g('notifs', []); }
+
+/* ═══════════════════════════════════════════════════
+   NAVIGATION
+═══════════════════════════════════════════════════ */
+const ROOT_SC  = ['sc-home','sc-search','sc-favs','sc-cart','sc-profile'];
+const ADMIN_SC = ['sc-admin','sc-adm-prods','sc-adm-addprod','sc-adm-stock','sc-adm-orders','sc-adm-admins'];
+
+let stack = ['sc-splash'];
+let cur   = 'sc-splash';
+
+function go(id) {
+  if (ADMIN_SC.includes(id) && !isAdmin()) { toast('🔒 Acesso restrito'); return; }
+  const fromEl = document.getElementById(cur);
+  const toEl   = document.getElementById(id);
+  if (!toEl || id === cur) return;
+  fromEl.classList.remove('active');
+  fromEl.classList.add('behind');
+  toEl.classList.add('active');
+  cur = id;
+  stack.push(id);
+  onEnter(id);
+  syncBnav(id);
+}
+
+function goRoot(id) {
+  document.querySelectorAll('.sc').forEach(s => s.classList.remove('active', 'behind'));
+  const toEl = document.getElementById(id);
+  if (!toEl) return;
+  toEl.classList.add('active');
+  cur = id;
+  stack = [id];
+  onEnter(id);
+  syncBnav(id);
+}
+
+function bk() {
+  stack.pop();
+  const prev = stack[stack.length - 1] || 'sc-home';
+  document.querySelectorAll('.sc').forEach(s => s.classList.remove('active', 'behind'));
+  const toEl = document.getElementById(prev);
+  if (toEl) {
+    toEl.classList.add('active');
+    cur = prev;
+    onEnter(prev);
+    syncBnav(prev);
+  }
+}
+
+function syncBnav(id) {
+  const bnav = document.getElementById('bnav');
+  bnav.style.display = ROOT_SC.includes(id) ? 'flex' : 'none';
+  ['home','search','favs','cart','prof'].forEach(k => {
+    document.getElementById('ni-' + k)?.classList.remove('on');
+  });
+  const map = { 'sc-home':'home','sc-search':'search','sc-favs':'favs','sc-cart':'cart','sc-profile':'prof' };
+  if (map[id]) document.getElementById('ni-' + map[id])?.classList.add('on');
+}
+
+/* screen enter hooks */
+const ENTER = {
+  'sc-login':       renderLogin,
+  'sc-home':        renderHome,
+  'sc-cart':        renderCart,
+  'sc-favs':        renderFavs,
+  'sc-profile':     renderProfile,
+  'sc-orders':      renderOrders,
+  'sc-addrs':       renderAddrs,
+  'sc-prefs':       renderPrefs,
+  'sc-support':     renderSupport,
+  'sc-notifs':      renderNotifs,
+  'sc-search':      () => doSearch(''),
+  'sc-editprof':    renderEditProf,
+  'sc-admin':       renderAdmin,
+  'sc-adm-prods':   renderAdmProds,
+  'sc-adm-addprod': () => initProdForm(),
+  'sc-adm-stock':   renderAdmStock,
+  'sc-adm-orders':  renderAdmOrders,
+  'sc-adm-admins':  renderAdmAdmins,
+};
+function onEnter(id) {
+  if (ENTER[id]) ENTER[id]();
+  updCartBdg();
+  updNotifBdg();
+}
+
+/* clock */
+(function tick() {
+  const n = new Date();
+  const el = document.getElementById('sb-time');
+  if (el) el.textContent = n.getHours() + ':' + String(n.getMinutes()).padStart(2,'0');
+  setTimeout(tick, 15000);
+})();
+
+/* ═══════════════════════════════════════════════════
+   TOAST
+═══════════════════════════════════════════════════ */
+function toast(msg) {
+  const c = document.getElementById('toasts');
+  const t = document.createElement('div');
+  t.className = 'toast-msg';
+  t.textContent = msg;
+  c.appendChild(t);
+  requestAnimationFrame(() => t.classList.add('show'));
+  setTimeout(() => { t.classList.remove('show'); setTimeout(() => t.remove(), 300); }, 2700);
+}
+
+/* ═══════════════════════════════════════════════════
+   MODAL
+═══════════════════════════════════════════════════ */
+function openMdl(title, html) {
+  document.getElementById('mdl-ttl').textContent = title;
+  document.getElementById('mdl-body').innerHTML  = html;
+  document.getElementById('modal-bg').classList.add('open');
+}
+function closeMdl() { document.getElementById('modal-bg').classList.remove('open'); }
+
+/* ═══════════════════════════════════════════════════
+   HELPERS
+═══════════════════════════════════════════════════ */
+function R(n) { return Number(n).toFixed(2).replace('.', ','); }
+
+function cartTotal() {
+  return getCart().reduce((s, i) => s + i.price * i.qty, 0);
+}
+
+function updCartBdg() {
+  const n = getCart().reduce((s, i) => s + i.qty, 0);
+  const b = document.getElementById('cart-bdg');
+  if (b) { b.textContent = n; b.style.display = n > 0 ? 'flex' : 'none'; }
+}
+
+function updNotifBdg() {
+  const n = getNotifs().filter(x => !x.r).length;
+  const b = document.getElementById('nbdg');
+  if (b) { b.textContent = n; b.style.display = n > 0 ? 'flex' : 'none'; }
+}
+
+function isFav(id)   { return getFavs().includes(id); }
+
+function togFav(id) {
+  let f = getFavs();
+  const i = f.indexOf(id);
+  if (i >= 0) { f.splice(i, 1); toast('💔 Removido dos favoritos'); }
+  else         { f.push(id);    toast('❤️ Salvo nos favoritos!'); }
+  S.s('favs', f);
+  updNotifBdg();
+  document.querySelectorAll('[data-fav="' + id + '"]').forEach(el => {
+    el.textContent = isFav(id) ? '❤️' : '🤍';
+  });
+}
+
+const ST_TAG = { Pendente:'t-gold', Confirmado:'t-green', Enviado:'t-blue', Entregue:'t-navy' };
+
+/* ═══════════════════════════════════════════════════
+   PRODUCT CARD HTML
+═══════════════════════════════════════════════════ */
+function pcHTML(p, wide) {
+  const fav  = isFav(p.id);
+  const disc = p.op ? Math.round((1 - p.price / p.op) * 100) : null;
+  const ts   = Object.values(p.stock).reduce((a, b) => a + b, 0);
+  const low  = ts > 0 && ts < 7;
+  const coverEl = (p.imgs && p.imgs.length > 0)
+    ? `<img src="${p.imgs[0]}" style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0;border-radius:0">`
+    : p.em;
+  return `<div class="pc${wide ? ' wide' : ''}" onclick="openProd('${p.id}')">
+    <div class="pc-img ${p.bg}" style="position:relative">
+      ${coverEl}
+      <div class="pc-fav" data-fav="${p.id}" onclick="event.stopPropagation();togFav('${p.id}')">${fav ? '❤️' : '🤍'}</div>
+      ${disc ? `<div class="pc-bdg"><span class="tag t-red">−${disc}%</span></div>` : low ? `<div class="pc-bdg"><span class="tag t-orange">⚡ ÚLTIMAS</span></div>` : ''}
+    </div>
+    <div class="pc-info">
+      <div class="pc-nm">${p.name}</div>
+      <div><span class="pc-pr">R$ ${R(p.price)}</span>${p.op ? `<span class="pc-op">R$ ${R(p.op)}</span>` : ''}</div>
+      <div class="pc-st">${'★'.repeat(Math.round(p.stars))} <span style="color:var(--g4)">(${p.rev})</span></div>
+    </div>
+  </div>`;
+}
+
+/* ═══════════════════════════════════════════════════
+   AUTH — LOGIN / REGISTER
+═══════════════════════════════════════════════════ */
+let lTab    = 'login';
+let showPw  = false;
+
+function renderLogin() {
+  document.getElementById('login-body').innerHTML = `
+    <div class="log-tabs">
+      <div class="ltab${lTab==='login'?' on':''}" onclick="lTab='login';renderLogin()">Entrar</div>
+      <div class="ltab${lTab==='reg'?' on':''}"   onclick="lTab='reg';renderLogin()">Cadastrar</div>
+    </div>
+    ${lTab === 'login' ? `
+      <div class="fg"><label class="fl">E-mail</label><input class="fi" id="l-em" type="email" placeholder="seu@email.com"></div>
+      <div class="fg"><label class="fl">Senha</label>
+        <div class="pw-wrap">
+          <input class="fi" id="l-pw" type="${showPw ? 'text' : 'password'}" placeholder="••••••••" style="padding-right:42px">
+          <span class="pw-eye" onclick="showPw=!showPw;renderLogin()">${showPw ? '🙈' : '👁️'}</span>
+        </div>
+      </div>
+      <div id="l-err" style="font-size:13px;color:var(--red);margin-bottom:10px;display:none"></div>
+      <button class="btn btn-navy" onclick="doLogin()">Entrar</button>
+      <div class="divider">ou</div>
+      <button class="btn btn-ghost btn-sm" onclick="guestLogin()">Continuar sem cadastro</button>
+    ` : `
+      <div class="fg"><label class="fl">Nome</label><input class="fi" id="r-nm" placeholder="Seu nome completo"></div>
+      <div class="fg"><label class="fl">E-mail</label><input class="fi" id="r-em" type="email" placeholder="seu@email.com"></div>
+      <div class="fg"><label class="fl">Senha (mín. 6 caracteres)</label>
+        <div class="pw-wrap">
+          <input class="fi" id="r-pw" type="${showPw ? 'text' : 'password'}" placeholder="••••••••" style="padding-right:42px">
+          <span class="pw-eye" onclick="showPw=!showPw;renderLogin()">${showPw ? '🙈' : '👁️'}</span>
+        </div>
+      </div>
+      <div id="r-err" style="font-size:13px;color:var(--red);margin-bottom:10px;display:none"></div>
+      <button class="btn btn-navy" onclick="doReg()">Criar conta</button>
+      <div class="divider">ou</div>
+      <button class="btn btn-ghost btn-sm" onclick="guestLogin()">Continuar sem cadastro</button>
+    `}`;
+}
+
+function setErr(id, msg) {
+  const el = document.getElementById(id);
+  if (el) { el.textContent = msg; el.style.display = msg ? 'block' : 'none'; }
+}
+
+function doLogin() {
+  const email = (document.getElementById('l-em')?.value || '').trim().toLowerCase();
+  const senha = document.getElementById('l-pw')?.value || '';
+  if (!email || !senha) { setErr('l-err', '⚠️ Preencha e-mail e senha.'); return; }
+
+  /* admin check */
+  if (isAdminEmail(email)) {
+    if (senha !== ADMIN_PASSWORD) { setErr('l-err', '❌ Senha de admin incorreta.'); return; }
+    const user = { name: email.split('@')[0], email, phone: '', city: '', onboarded: true, role: 'admin' };
+    S.s('user', user);
+    toast('✅ Bem-vinda, admin!');
+    goRoot('sc-home');
+    return;
+  }
+
+  /* regular user */
+  const users = S.g('users', {});
+  if (!users[email]) { setErr('l-err', '❌ E-mail não cadastrado. Crie uma conta.'); return; }
+  if (users[email].senha !== btoa(senha)) { setErr('l-err', '❌ Senha incorreta.'); return; }
+  const u = { ...users[email], email };
+  S.s('user', u);
+  afterAuth(u);
+}
+
+function doReg() {
+  const nome  = (document.getElementById('r-nm')?.value || '').trim();
+  const email = (document.getElementById('r-em')?.value || '').trim().toLowerCase();
+  const senha = document.getElementById('r-pw')?.value || '';
+  if (!nome || !email || !senha) { setErr('r-err', '⚠️ Preencha todos os campos.'); return; }
+  if (senha.length < 6)           { setErr('r-err', '⚠️ Senha precisa ter 6+ caracteres.'); return; }
+  if (!email.includes('@'))        { setErr('r-err', '⚠️ E-mail inválido.'); return; }
+  const users = S.g('users', {});
+  if (users[email])                { setErr('r-err', '⚠️ E-mail já cadastrado. Faça login.'); return; }
+  users[email] = { name: nome, senha: btoa(senha), phone: '', city: '', onboarded: false, prefs: {} };
+  S.s('users', users);
+  const u = { name: nome, email, phone: '', city: '', onboarded: false, prefs: {}, role: 'user' };
+  S.s('user', u);
+  afterAuth(u);
+}
+
+function guestLogin() {
+  const u = { name: '', email: '', phone: '', city: '', onboarded: false, guest: true, role: 'guest' };
+  S.s('user', u);
+  afterAuth(u);
+}
+
+function afterAuth(u) {
+  if (!u.onboarded && !u.guest) { obStep = 0; obSel = {}; go('sc-ob'); renderOb(); }
+  else goRoot('sc-home');
+}
+
+function logout() { S.d('user'); goRoot('sc-login'); toast('👋 Até logo!'); }
+
+/* ═══════════════════════════════════════════════════
+   ONBOARDING
+═══════════════════════════════════════════════════ */
+let obStep = 0, obSel = {};
+const OB = [
+  { key:'styles', type:'multi',  h:'Qual é o seu estilo?',      s:'Selecione quantos quiser.',
+    opts: [{e:'👔',n:'Trabalho'},{e:'🌸',n:'Casual'},{e:'✨',n:'Festa'},{e:'🖤',n:'Minimalista'},{e:'🎨',n:'Moderno'},{e:'👑',n:'Elegante'}] },
+  { key:'price',  type:'chips',  h:'Sua faixa de preço',         s:'Priorizamos produtos no seu orçamento.',
+    opts: ['Até R$100','R$100–R$200','R$200–R$350','R$350+'] },
+  { key:'colors', type:'multi',  h:'Suas cores favoritas',       s:'Aparecem com mais destaque na sua home.',
+    opts: [{e:'🖤',n:'Preto'},{e:'🤍',n:'Branco'},{e:'🌸',n:'Rosa'},{e:'🌿',n:'Verde'},{e:'💙',n:'Azul'},{e:'🤎',n:'Caramelo'}] },
+];
+
+function renderOb() {
+  const step = OB[obStep];
+  const prog = OB.map((_,i) => `<div class="ob-p${i<obStep?' d':i===obStep?' c':''}"></div>`).join('');
+  const sel  = obSel[step.key] || (step.type === 'multi' ? [] : null);
+  let cnt = '';
+  if (step.type === 'multi') {
+    cnt = `<div class="ob-grid">${step.opts.map(o =>
+      `<div class="ob-c${(sel||[]).includes(o.n)?' s':''}" onclick="obSl('${step.key}','${o.n}','multi',this)">
+        <div class="ob-em">${o.e}</div><div class="ob-nm">${o.n}</div>
+      </div>`).join('')}</div>`;
+  } else {
+    cnt = `<div class="ob-chips">${step.opts.map(o =>
+      `<div class="chip${sel===o?' s':''}" onclick="obSl('${step.key}','${o}','single',this)">${o}</div>`).join('')}</div>`;
+  }
+  document.getElementById('ob-body').innerHTML = `
+    <div class="ob-prog">${prog}</div>
+    <div class="ob-step">Passo ${obStep+1} de ${OB.length}</div>
+    <div class="ob-h">${step.h}</div>
+    <div class="ob-s">${step.s}</div>
+    ${cnt}
+    <div class="ob-nav">
+      ${obStep > 0 ? `<button class="btn btn-ghost" style="width:90px" onclick="obPv()">← Voltar</button>` : ''}
+      <button class="btn btn-navy" onclick="obNx()">${obStep===OB.length-1 ? 'Começar ✨' : 'Continuar →'}</button>
+    </div>`;
+}
+
+function obSl(k, v, type, el) {
+  if (type === 'multi') {
+    const a = obSel[k] || []; const i = a.indexOf(v);
+    if (i >= 0) a.splice(i,1); else a.push(v);
+    obSel[k] = [...a]; el.classList.toggle('s');
+  } else {
+    obSel[k] = v;
+    el.closest('.ob-chips, div').querySelectorAll('.chip, .ob-c').forEach(c => c.classList.remove('s'));
+    el.classList.add('s');
+  }
+}
+
+function obNx() {
+  if (obStep < OB.length - 1) { obStep++; renderOb(); }
+  else {
+    const u = getUser(); u.prefs = obSel; u.onboarded = true; S.s('user', u);
+    if (u.email) {
+      const us = S.g('users',{}); if (us[u.email]) { us[u.email].prefs = obSel; us[u.email].onboarded = true; S.s('users', us); }
+    }
+    goRoot('sc-home');
+  }
+}
+function obPv() { if (obStep > 0) { obStep--; renderOb(); } }
+
+/* ═══════════════════════════════════════════════════
+   HOME
+═══════════════════════════════════════════════════ */
+let activeCat = 'Todos';
+
+function renderHome() {
+  const u     = getUser() || {};
+  document.getElementById('hgreet').textContent = u.name ? `Olá, ${u.name} 👋` : 'Olá 👋';
+  const prods  = getProds();
+  const cats   = ['Todos', ...new Set(prods.map(p => p.cat))];
+  const filter = activeCat === 'Todos' ? prods : prods.filter(p => p.cat === activeCat);
+  const styles = u.prefs?.styles || [];
+  let picks = prods;
+  if (styles.length) {
+    const cm = { Trabalho:['Trabalho','Blazers'], Casual:['Casual','Blusas'], Festa:['Festa'], Minimalista:['Básicos','Calças'], Moderno:['Vestidos'], Elegante:['Vestidos','Blazers'] };
+    const pc = [...new Set(styles.flatMap(s => cm[s] || []))];
+    picks = [...prods.filter(p => pc.includes(p.cat)), ...prods.filter(p => !pc.includes(p.cat))];
+  }
+  document.getElementById('home-body').innerHTML = `
+    <div class="bnr">
+      <div class="bnr-glow"></div>
+      <div class="bnr-txt">
+        <div class="bnr-ey">Nova Coleção</div>
+        <div class="bnr-h">Primavera<br>Sofisticada</div>
+        <button class="bnr-btn" onclick="goRoot('sc-search')">VER COLEÇÃO</button>
+      </div>
+      <div class="bnr-deco">👗</div>
+    </div>
+    <div class="sec"><div class="sec-hdr"><div class="sec-ttl">Categorias</div></div></div>
+    <div class="cats">${cats.map(c => `<div class="cat${c===activeCat?' on':''}" onclick="filterCat('${c}')">${c}</div>`).join('')}</div>
+    ${styles.length ? `
+      <div class="sec"><div class="sec-hdr"><div class="sec-ttl">✦ Para você</div><div class="sec-lnk" onclick="goRoot('sc-search')">Ver todos</div></div></div>
+      <div class="prow">${picks.slice(0,5).map(p => pcHTML(p,true)).join('')}</div>
+    ` : ''}
+    <div class="sec">
+      <div class="sec-hdr"><div class="sec-ttl">${activeCat==='Todos'?'Mais Vendidos':activeCat}</div><div class="sec-lnk" onclick="goRoot('sc-search')">Ver todos</div></div>
+      <div class="pgrid" style="padding:0">${filter.slice(0,6).map(p => pcHTML(p)).join('')}</div>
+    </div>
+    <div style="height:20px"></div>`;
+}
+
+function filterCat(c) { activeCat = c; renderHome(); document.getElementById('sc-home').scrollTop = 130; }
+
+/* ═══════════════════════════════════════════════════
+   PRODUCT PAGE
+═══════════════════════════════════════════════════ */
+let cProd = null, selSz = null, selCol = null, qty = 1;
+
+function openProd(id) {
+  cProd  = getProds().find(p => p.id === id);
+  if (!cProd) return;
+  selSz  = null; selCol = cProd.colors[0]; qty = 1;
+  renderProd(); go('sc-product');
+}
+
+function renderProd() {
+  galIdx = 0;
+  if (!cProd) return;
+  const p    = cProd;
+  const fav  = isFav(p.id);
+  const disc = p.op ? Math.round((1 - p.price / p.op) * 100) : null;
+  const ts   = Object.values(p.stock).reduce((a,b) => a+b, 0);
+  document.getElementById('prod-body').innerHTML = `
+    <div class="pgal ${p.bg}" id="pgal-wrap" style="position:relative">
+      <div class="pgal-back" onclick="bk()">←</div>
+      ${(p.imgs && p.imgs.length > 0) ? `
+        <div id="pgal-track" style="width:100%;height:100%;display:flex;transition:transform .3s;will-change:transform">
+          ${p.imgs.map(src => `<div style="min-width:100%;height:100%;flex-shrink:0"><img src="${src}" style="width:100%;height:100%;object-fit:cover"></div>`).join('')}
+        </div>
+        <div class="gdots">${p.imgs.map((_,i) => `<div class="gd${i===0?' on':''}" id="gd-${i}"></div>`).join('')}</div>
+        ${p.imgs.length > 1 ? `
+          <div onclick="slideGal(-1)" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);width:32px;height:32px;border-radius:50%;background:rgba(0,0,0,.3);display:flex;align-items:center;justify-content:center;cursor:pointer;color:#fff;font-size:16px;z-index:5">‹</div>
+          <div onclick="slideGal(1)"  style="position:absolute;right:10px;top:50%;transform:translateY(-50%);width:32px;height:32px;border-radius:50%;background:rgba(0,0,0,.3);display:flex;align-items:center;justify-content:center;cursor:pointer;color:#fff;font-size:16px;z-index:5">›</div>` : ''}
+      ` : `
+        <div class="pgal-img">${p.em}</div>
+        <div class="gdots"><div class="gd on"></div></div>
+      `}
+      <div class="pgal-fav" data-fav="${p.id}" onclick="togFav('${p.id}')">${fav ? '❤️' : '🤍'}</div>
+    </div>
+    <div class="pbody">
+      <div class="p-cat">${p.cat}</div>
+      <div class="p-ttl">${p.name}</div>
+      <div class="p-pricing">
+        <div class="p-price">R$ ${R(p.price)}</div>
+        ${p.op ? `<div class="p-oldp">R$ ${R(p.op)}</div><span class="tag t-red">−${disc}%</span>` : ''}
+      </div>
+      <div class="p-stars">${'★'.repeat(Math.round(p.stars))} <span>${p.stars} · ${p.rev} avaliações</span></div>
+
+      <div class="vlbl">Cor</div>
+      <div class="swatches">${(p.colors||[]).map((c,i) =>
+        `<div class="sw${i===0?' on':''}" style="background:${c};${c==='#f0f0ec'?'border-color:#ccc;':''}" onclick="selC(this,'${c}')"></div>`).join('')}
+      </div>
+
+      <div class="vlbl">Tamanho</div>
+      <div class="sizes">${['PP','P','M','G','GG'].map(s =>
+        `<div class="sz${(p.stock[s]||0)===0?' esg':selSz===s?' on':''}"
+              onclick="${(p.stock[s]||0)>0?`selS(this,'${s}')`:'void 0'}">${s}</div>`).join('')}
+      </div>
+
+      ${ts > 0 && ts < 7 ? `<div class="urgency">⚡ Apenas ${ts} unidade${ts!==1?'s':''} restante${ts!==1?'s':''}!</div>` : ''}
+      <div class="p-desc">${p.desc}</div>
+      <div class="irow" style="background:var(--blue3)">🚚 <b>Frete grátis</b> acima de R$ 199,00</div>
+      <div class="irow" style="background:var(--greenbg);margin-top:6px">↩️ <span style="color:var(--green)"><b>Troca grátis</b> em 30 dias</span></div>
+    </div>
+    <div class="pcta">
+      <div class="qty-c">
+        <div class="qbtn" onclick="chQ(-1)">−</div>
+        <div class="qval" id="qval">${qty}</div>
+        <div class="qbtn" onclick="chQ(1)">+</div>
+      </div>
+      <button class="btn btn-navy" style="flex:1" onclick="doAdd()">🛒 Adicionar ao Carrinho</button>
+    </div>`;
+}
+
+/* gallery slide controls */
+let galIdx = 0;
+function slideGal(dir) {
+  if (!cProd || !cProd.imgs) return;
+  const total = cProd.imgs.length;
+  galIdx = (galIdx + dir + total) % total;
+  const track = document.getElementById('pgal-track');
+  if (track) track.style.transform = `translateX(-${galIdx * 100}%)`;
+  for (let i = 0; i < total; i++) {
+    const dot = document.getElementById('gd-' + i);
+    if (dot) dot.classList.toggle('on', i === galIdx);
+  }
+}
+
+function selS(el, s) { document.querySelectorAll('#sc-product .sz').forEach(x => x.classList.remove('on')); el.classList.add('on'); selSz = s; }
+function selC(el, c) { document.querySelectorAll('#sc-product .sw').forEach(x => x.classList.remove('on')); el.classList.add('on'); selCol = c; }
+function chQ(d)      { qty = Math.max(1, qty + d); const e = document.getElementById('qval'); if (e) e.textContent = qty; }
+
+function doAdd() {
+  if (!selSz) { toast('⚠️ Selecione um tamanho'); return; }
+  const p = cProd;
+  if ((p.stock[selSz] || 0) === 0) { toast('❌ Tamanho esgotado'); return; }
+  let cart = getCart();
+  const key = p.id + '_' + selSz + '_' + (selCol || '');
+  const ex  = cart.find(i => i.key === key);
+  if (ex) ex.qty += qty;
+  else cart.push({ key, pid:p.id, sz:selSz, col:selCol||'', qty, name:p.name, price:p.price, em:p.em, bg:p.bg });
+  S.s('cart', cart);
+  updCartBdg();
+  toast('🛒 Adicionado ao carrinho!');
+}
+
+/* ═══════════════════════════════════════════════════
+   CART
+═══════════════════════════════════════════════════ */
+function renderCart() {
+  const cart = getCart();
+  const nl   = document.getElementById('cart-n');
+  if (nl) nl.textContent = `${cart.length} ${cart.length===1?'item':'itens'}`;
+  const body = document.getElementById('cart-body');
+  if (!body) return;
+  if (!cart.length) {
+    body.innerHTML = `<div class="empty">
+      <div class="empty-ic">🛒</div>
+      <div class="empty-h">Carrinho vazio</div>
+      <div class="empty-s">Explore a loja e adicione produtos.</div>
+      <button class="btn btn-navy btn-sm" onclick="goRoot('sc-home')" style="width:auto;padding:0 22px;margin-top:10px">Ver Produtos</button>
+    </div>`;
+    return;
+  }
+  const tot   = cartTotal();
+  const fr    = tot >= 199 ? 0 : 15;
+  const grand = tot + fr;
+  body.innerHTML = `
+    <div class="clist">${cart.map(i => `
+      <div class="ci">
+        <div class="ci-img ${i.bg}">${i.em}</div>
+        <div class="ci-body">
+          <div>
+            <div class="ci-nm">${i.name}</div>
+            <div class="ci-var">Tam: ${i.sz}</div>
+          </div>
+          <div class="ci-row">
+            <div class="ci-pr">R$ ${R(i.price * i.qty)}</div>
+            <div style="display:flex;align-items:center;gap:8px">
+              <div class="ci-qc">
+                <button class="cqb" onclick="chCQ('${i.key}',-1)">−</button>
+                <div class="cqv">${i.qty}</div>
+                <button class="cqb" onclick="chCQ('${i.key}',1)">+</button>
+              </div>
+              <div class="ci-del" onclick="rmCart('${i.key}')">🗑️</div>
+            </div>
+          </div>
+        </div>
+      </div>`).join('')}
+    </div>
+    <div class="csum">
+      <div class="sum-r"><span class="sum-lbl">Subtotal</span><span>R$ ${R(tot)}</span></div>
+      <div class="sum-r"><span class="sum-lbl">Frete</span><span style="color:${fr===0?'#86efac':'#fff'}">${fr===0?'Grátis ✓':'R$ '+R(fr)}</span></div>
+      <div class="sum-r sum-tot"><span>Total</span><span>R$ ${R(grand)}</span></div>
+    </div>
+    <div style="padding:0 16px 10px">
+      <button class="btn btn-wa" onclick="finalizarCompra()"><span style="font-size:20px">💬</span> Finalizar pelo WhatsApp</button>
+    </div>
+    <p style="text-align:center;font-size:12px;color:var(--g4);padding:0 18px 22px;line-height:1.5">
+      Você será redirecionada ao WhatsApp com todos os detalhes do pedido já preenchidos.
+    </p>`;
+}
+
+function chCQ(k, d) {
+  let c = getCart(); const i = c.find(x => x.key===k); if (!i) return;
+  i.qty = Math.max(1, i.qty + d); S.s('cart', c); renderCart();
+}
+function rmCart(k) { S.s('cart', getCart().filter(i => i.key !== k)); renderCart(); updCartBdg(); }
+
+/* ═══════════════════════════════════════════════════
+   WHATSAPP CHECKOUT
+═══════════════════════════════════════════════════ */
+function finalizarCompra() {
+  const carrinho = getCart();
+  if (!carrinho.length) { toast('⚠️ Carrinho vazio'); return; }
+  const u     = getUser() || {};
+  const tot   = cartTotal();
+  const fr    = tot >= 199 ? 0 : 15;
+  const total = tot + fr;
+
+  let mensagem = `Oii Dhandara!!!! 👗✨\n\n${u.name ? `Sou ${u.name}. ` : ''}Vim pelo app AuraVest e quero finalizar meu pedido:\n\n`;
+  carrinho.forEach(item => {
+    mensagem += `• ${item.name} (Tam: ${item.sz}) x${item.qty} - R$ ${R(item.price * item.qty)}\n`;
+  });
+  mensagem += `\nFrete: ${fr === 0 ? 'Grátis' : 'R$ ' + R(fr)}`;
+  mensagem += `\n*Total: R$ ${R(total)}*`;
+  mensagem += `\n\nAguardo confirmação de pagamento 💖`;
+
+  /* save order */
+  salvarPedido({
+    id:     '#' + (1000 + getOrders().length + 1),
+    items:  [...carrinho],
+    total,
+    status: 'Pendente',
+    date:   new Date().toLocaleDateString('pt-BR'),
+    client: u.name  || 'Cliente',
+    email:  u.email || '',
+  });
+  S.s('cart', []);
+
+  /* confirm screen */
+  const cd = document.getElementById('cf-detail');
+  if (cd) {
+    cd.innerHTML = carrinho.map(i =>
+      `<div class="cf-row"><span>${i.name} (${i.sz}) ×${i.qty}</span><span>R$ ${R(i.price*i.qty)}</span></div>`
+    ).join('') + `<div class="cf-row tot"><span>Total</span><span>R$ ${R(total)}</span></div>`;
+  }
+
+  go('sc-confirm');
+  const link = `https://wa.me/5588988685247?text=${encodeURIComponent(mensagem)}`;
+  setTimeout(() => window.open(link, '_blank'), 600);
+}
+
+/* ═══════════════════════════════════════════════════
+   ORDERS
+═══════════════════════════════════════════════════ */
+function salvarPedido(pedido) {
+  let pedidos = S.g('orders', []);
+  pedidos.unshift(pedido);
+  S.s('orders', pedidos);
+}
+
+function renderOrders() {
+  const u    = getUser() || {};
+  const all  = getOrders();
+  const ords = u.email ? all.filter(o => o.email === u.email || o.client === u.name) : all;
+  const body = document.getElementById('orders-body');
+  if (!body) return;
+  if (!ords.length) {
+    body.innerHTML = `<div class="empty"><div class="empty-ic">📦</div><div class="empty-h">Sem pedidos</div><div class="empty-s">Seus pedidos aparecerão aqui.</div></div>`;
+    return;
+  }
+  body.innerHTML = ords.map(o => `
+    <div class="oc">
+      <div class="oc-t"><div class="oc-id">Pedido ${o.id}</div><div class="oc-dt">${o.date}</div></div>
+      <div class="oc-its">${o.items.map(i => `${i.name} (${i.sz||i.size}) ×${i.qty}`).join(' · ')}</div>
+      <div class="oc-b"><div class="oc-vl">R$ ${R(o.total)}</div><span class="tag ${ST_TAG[o.status]||'t-blue'}">${o.status}</span></div>
+    </div>`).join('');
+}
+
+/* ═══════════════════════════════════════════════════
+   FAVS
+═══════════════════════════════════════════════════ */
+function renderFavs() {
+  const ids   = getFavs();
+  const prods = getProds().filter(p => ids.includes(p.id));
+  const body  = document.getElementById('favs-body');
+  if (!body) return;
+  body.innerHTML = prods.length
+    ? prods.map(p => pcHTML(p)).join('')
+    : `<div class="empty" style="grid-column:1/-1"><div class="empty-ic">❤️</div><div class="empty-h">Sem favoritos</div><div class="empty-s">Toque no ❤️ em qualquer produto.</div></div>`;
+}
+
+/* ═══════════════════════════════════════════════════
+   PROFILE
+═══════════════════════════════════════════════════ */
+function renderProfile() {
+  const u    = getUser() || {};
+  const ords = getOrders().filter(o => !u.email || o.email===u.email || o.client===u.name);
+  const favs = getFavs();
+  document.getElementById('prof-body').innerHTML = `
+    <div class="prof-hero">
+      <div class="av">${u.name ? u.name[0].toUpperCase() : '👤'}</div>
+      <div style="flex:1;min-width:0">
+        <div class="prof-nm">${u.name || 'Minha Conta'}</div>
+        <div class="prof-em">${u.email || 'Visitante'}</div>
+      </div>
+      <button class="prof-edit" onclick="go('sc-editprof')">Editar</button>
+    </div>
+    <div class="pstats">
+      <div class="pst"><div class="pst-v">${ords.length}</div><div class="pst-l">Pedidos</div></div>
+      <div class="pst"><div class="pst-v">${favs.length}</div><div class="pst-l">Salvos</div></div>
+      <div class="pst"><div class="pst-v">R$${ords.reduce((s,o)=>s+(o.total||0),0).toFixed(0)}</div><div class="pst-l">Gasto</div></div>
+    </div>
+    <span class="slbl">Minha conta</span>
+    <div class="mlst">
+      <div class="mi" onclick="go('sc-orders')">   <div class="mi-ic">📦</div><div class="mi-tx">Meus pedidos</div>${ords.length?`<span class="mi-bdg">${ords.length}</span>`:''}<div class="mi-ar">›</div></div>
+      <div class="mi" onclick="goRoot('sc-favs')"> <div class="mi-ic">❤️</div><div class="mi-tx">Lista de favoritos</div><div class="mi-ar">›</div></div>
+      <div class="mi" onclick="go('sc-addrs')">    <div class="mi-ic">📍</div><div class="mi-tx">Endereços</div><div class="mi-ar">›</div></div>
+      <div class="mi" onclick="go('sc-prefs')">    <div class="mi-ic">✨</div><div class="mi-tx">Minhas preferências</div><div class="mi-ar">›</div></div>
+    </div>
+    ${isAdmin() ? `
+    <span class="slbl">Administração</span>
+    <div class="mlst">
+      <div class="mi" style="background:var(--blue3)" onclick="go('sc-admin')">
+        <div class="mi-ic">⚙️</div>
+        <div class="mi-tx" style="color:var(--blue2);font-weight:700">Painel Administrativo</div>
+        <span class="tag t-navy" style="font-size:9px">ADMIN</span>
+        <div class="mi-ar" style="color:var(--blue2)">›</div>
+      </div>
+    </div>` : ''}
+    <span class="slbl">Suporte</span>
+    <div class="mlst">
+      <div class="mi" onclick="go('sc-support')"><div class="mi-ic">💬</div><div class="mi-tx">Falar com a Dhandara</div><div class="mi-ar">›</div></div>
+      <div class="mi" onclick="go('sc-notifs')"> <div class="mi-ic">🔔</div><div class="mi-tx">Notificações</div><div class="mi-ar">›</div></div>
+    </div>
+    <span class="slbl">Conta</span>
+    <div class="mlst">
+      <div class="mi mi-red" onclick="logout()"><div class="mi-ic">🚪</div><div class="mi-tx">Sair da conta</div></div>
+    </div>
+    <div style="height:24px"></div>`;
+}
+
+/* ═══════════════════════════════════════════════════
+   ADDRESSES
+═══════════════════════════════════════════════════ */
+function renderAddrs() {
+  document.getElementById('addrs-body').innerHTML = `
+    <div style="background:#fff;border-radius:var(--r);padding:14px;box-shadow:var(--sh);display:flex;gap:12px">
+      <div style="font-size:22px;padding-top:2px">🏠</div>
+      <div style="flex:1">
+        <div style="font-size:14px;font-weight:700;margin-bottom:4px">Casa <span class="tag t-green" style="margin-left:6px">Principal</span></div>
+        <div style="font-size:13px;color:var(--g2);line-height:1.6">Rua das Flores, 142 – Apt 3<br>Itapipoca, CE · 62500-000</div>
+      </div>
+    </div>
+    <div style="background:#fff;border-radius:var(--r);padding:14px;box-shadow:var(--sh);display:flex;gap:12px">
+      <div style="font-size:22px;padding-top:2px">💼</div>
+      <div style="flex:1">
+        <div style="font-size:14px;font-weight:700;margin-bottom:4px">Trabalho</div>
+        <div style="font-size:13px;color:var(--g2);line-height:1.6">Av. Central, 800 – Sala 204<br>Itapipoca, CE · 62502-000</div>
+      </div>
+    </div>
+    <button class="btn btn-ghost btn-sm" onclick="toast('🏠 Em breve!')">+ Adicionar endereço</button>`;
+}
+
+/* ═══════════════════════════════════════════════════
+   PREFERENCES
+═══════════════════════════════════════════════════ */
+function renderPrefs() {
+  const u = getUser() || {}; const p = u.prefs || {};
+  document.getElementById('prefs-body').innerHTML = `
+    <div class="pref-sec" style="margin-top:12px">
+      <div class="pref-h">Estilos favoritos</div>
+      <div style="display:flex;flex-wrap:wrap;gap:8px">
+        ${['Trabalho','Casual','Festa','Minimalista','Moderno','Elegante'].map(s =>
+          `<div class="chip${(p.styles||[]).includes(s)?' s':''}" onclick="tPref('styles','${s}',this)">${s}</div>`).join('')}
+      </div>
+    </div>
+    <div class="pref-sec">
+      <div class="pref-h">Faixa de preço</div>
+      <div style="display:flex;flex-wrap:wrap;gap:8px">
+        ${['Até R$100','R$100–R$200','R$200–R$350','R$350+'].map(v =>
+          `<div class="chip${p.price===v?' s':''}" onclick="sPref('price','${v}',this)">${v}</div>`).join('')}
+      </div>
+    </div>
+    <div class="pref-sec">
+      <div class="pref-h">Cores favoritas</div>
+      <div style="display:flex;flex-wrap:wrap;gap:8px">
+        ${['Preto','Branco','Rosa','Verde','Azul','Caramelo'].map(c =>
+          `<div class="chip${(p.colors||[]).includes(c)?' s':''}" onclick="tPref('colors','${c}',this)">${c}</div>`).join('')}
+      </div>
+    </div>
+    <div style="padding:0 16px 24px">
+      <button class="btn btn-navy" onclick="salvarPerfil({prefs:getUser()?.prefs||{}})">Salvar preferências</button>
+    </div>`;
+}
+function tPref(k,v,el) { const u=getUser(); if(!u.prefs)u.prefs={}; const a=u.prefs[k]||[]; const i=a.indexOf(v); if(i>=0)a.splice(i,1); else a.push(v); u.prefs[k]=[...a]; S.s('user',u); el.classList.toggle('s'); }
+function sPref(k,v,el) { const u=getUser(); if(!u.prefs)u.prefs={}; u.prefs[k]=v; S.s('user',u); el.closest('div').querySelectorAll('.chip').forEach(c=>c.classList.remove('s')); el.classList.add('s'); }
+
+/* ═══════════════════════════════════════════════════
+   SUPPORT
+═══════════════════════════════════════════════════ */
+function renderSupport() {
+  const faqs = [
+    ['Como funciona a troca?',       'Trocas gratuitas em até 30 dias após o recebimento.'],
+    ['Qual o prazo de entrega?',     '3 a 7 dias úteis dependendo da sua região.'],
+    ['Aceitam PIX?',                 'Sim! PIX, cartão de crédito e débito. A Dhandara envia as instruções pelo WhatsApp.'],
+    ['Como rastrear meu pedido?',    'O código de rastreio é enviado por WhatsApp após o envio do produto.'],
+    ['Posso cancelar um pedido?',    'Sim, entre em contato pelo WhatsApp antes do envio.'],
+  ];
+  document.getElementById('support-body').innerHTML = `
+    <div style="background:#fff;border-radius:var(--r);padding:20px;box-shadow:var(--sh);text-align:center">
+      <div style="font-size:46px;margin-bottom:12px">💬</div>
+      <div style="font-family:'Cormorant Garamond',serif;font-size:22px;color:var(--navy);margin-bottom:7px">Falar com a Dhandara</div>
+      <div style="font-size:14px;color:var(--g2);line-height:1.6;margin-bottom:16px">Atendimento de seg a sáb, das 8h às 20h.</div>
+      <button class="btn btn-wa" onclick="window.open('https://wa.me/5588988685247?text=Oi+Dhandara!+Preciso+de+ajuda.','_blank')">
+        <span style="font-size:20px">💬</span> Abrir WhatsApp
+      </button>
+    </div>
+    <div style="background:#fff;border-radius:var(--r);padding:18px;box-shadow:var(--sh)">
+      <div style="font-family:'Cormorant Garamond',serif;font-size:19px;color:var(--g1);margin-bottom:12px">Perguntas Frequentes</div>
+      ${faqs.map(([q,a],i) => `
+        <div style="border-bottom:1px solid var(--g5);padding:11px 0;cursor:pointer" onclick="tFaq(${i})">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <span style="font-size:14px;font-weight:600;color:var(--g1)">${q}</span>
+            <span id="fa${i}" style="font-size:18px;color:var(--g4);transition:transform .2s">›</span>
+          </div>
+          <div id="faq${i}" style="display:none;font-size:13px;color:var(--g2);line-height:1.5;margin-top:8px">${a}</div>
+        </div>`).join('')}
+    </div>`;
+}
+function tFaq(i) {
+  const a=document.getElementById('faq'+i); const ar=document.getElementById('fa'+i); if(!a)return;
+  const o=a.style.display==='block'; a.style.display=o?'none':'block'; ar.style.transform=o?'':'rotate(90deg)';
+}
+
+/* ═══════════════════════════════════════════════════
+   NOTIFICATIONS
+═══════════════════════════════════════════════════ */
+function renderNotifs() {
+  const ns = getNotifs(); ns.forEach(n => n.r = true); S.s('notifs', ns); updNotifBdg();
+  document.getElementById('notifs-body').innerHTML = !ns.length
+    ? `<div class="empty"><div class="empty-ic">🔔</div><div class="empty-h">Sem notificações</div></div>`
+    : ns.map(n => `
+      <div class="ni-card" style="background:#fff;border-radius:var(--r);padding:13px 15px;box-shadow:var(--sh);display:flex;gap:11px">
+        <div style="width:37px;height:37px;border-radius:9px;background:var(--blue3);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">${n.ic}</div>
+        <div style="flex:1">
+          <div style="font-size:13px;font-weight:700;color:var(--g1);margin-bottom:2px">${n.h}</div>
+          <div style="font-size:12px;color:var(--g2);line-height:1.45">${n.s}</div>
+          <div style="font-size:11px;color:var(--g4);margin-top:4px">${n.t}</div>
+        </div>
+      </div>`).join('');
+}
+
+/* ═══════════════════════════════════════════════════
+   SEARCH
+═══════════════════════════════════════════════════ */
+function doSearch(q) {
+  const ps = getProds();
+  const r  = q ? ps.filter(p => p.name.toLowerCase().includes(q.toLowerCase()) || p.cat.toLowerCase().includes(q.toLowerCase())) : ps;
+  const b  = document.getElementById('srch-body');
+  if (!b) return;
+  b.innerHTML = r.length
+    ? r.map(p => pcHTML(p)).join('')
+    : `<div class="empty" style="grid-column:1/-1"><div class="empty-ic">🔍</div><div class="empty-h">Sem resultados</div></div>`;
+}
+
+/* ═══════════════════════════════════════════════════
+   EDIT PROFILE
+═══════════════════════════════════════════════════ */
+function renderEditProf() {
+  const u = getUser() || {};
+  document.getElementById('ep-name').value  = u.name  || '';
+  document.getElementById('ep-email').value = u.email || '';
+  document.getElementById('ep-phone').value = u.phone || '';
+  document.getElementById('ep-city').value  = u.city  || '';
+}
+
+function saveProf() {
+  const u    = getUser() || {};
+  u.name     = document.getElementById('ep-name').value.trim();
+  u.phone    = document.getElementById('ep-phone').value.trim();
+  u.city     = document.getElementById('ep-city').value.trim();
+  salvarPerfil(u);
+  bk();
+}
+
+function salvarPerfil(dados) {
+  const u = getUser() || {};
+  Object.assign(u, dados);
+  S.s('user', u);
+  if (u.email) {
+    const us = S.g('users', {});
+    if (us[u.email]) { Object.assign(us[u.email], { name:u.name, phone:u.phone, city:u.city, prefs:u.prefs }); S.s('users', us); }
+  }
+  toast('✅ Dados salvos!');
+}
+
+/* ═══════════════════════════════════════════════════
+   ADMIN HOME
+═══════════════════════════════════════════════════ */
+function renderAdmin() {
+  if (!isAdmin()) { toast('🔒 Acesso negado'); bk(); return; }
+  const u    = getUser() || {};
+  document.getElementById('adm-sub').textContent = `${u.name||'Admin'} · ${u.email}`;
+  const ps   = getProds();
+  const os   = getOrders();
+  const rev  = os.reduce((s,o) => s+(o.total||0), 0);
+  const pend = os.filter(o => o.status==='Pendente').length;
+  const low  = ps.filter(p => Object.values(p.stock).reduce((a,b)=>a+b,0) < 8).length;
+  document.getElementById('adm-body').innerHTML = `
+    <div class="kgrid">
+      <div class="kpi"><div class="kpi-lbl">Pedidos</div><div class="kpi-v">${os.length}</div><div class="kpi-d ku">${pend} pendentes</div></div>
+      <div class="kpi"><div class="kpi-lbl">Faturamento</div><div class="kpi-v">R$${rev.toFixed(0)}</div><div class="kpi-d ku">acumulado</div></div>
+      <div class="kpi"><div class="kpi-lbl">Produtos</div><div class="kpi-v">${ps.length}</div><div class="kpi-d ${low?'kd':'ku'}">${low?`${low} baixo`:'ok'}</div></div>
+      <div class="kpi"><div class="kpi-lbl">Admins</div><div class="kpi-v">${getAdmins().length}</div><div class="kpi-d ku">ativos</div></div>
+    </div>
+    <div class="adm-sec">Gestão do Sistema</div>
+    <div class="aacts">
+      <div class="aa" onclick="go('sc-adm-prods')">   <div class="aa-ic">🛍️</div><div style="flex:1"><div class="aa-nm">Produtos</div><div class="aa-s">Adicionar, editar, remover</div></div><div style="color:var(--g5);font-size:16px">›</div></div>
+      <div class="aa" onclick="go('sc-adm-stock')">   <div class="aa-ic">📦</div><div style="flex:1"><div class="aa-nm">Estoque</div><div class="aa-s">Atualizar quantidades</div></div>${low?`<span class="tag t-red">${low}</span>`:''}<div style="color:var(--g5);font-size:16px">›</div></div>
+      <div class="aa" onclick="go('sc-adm-orders')">  <div class="aa-ic">🧾</div><div style="flex:1"><div class="aa-nm">Pedidos</div><div class="aa-s">Ver e atualizar status</div></div>${pend?`<span class="tag t-gold">${pend}</span>`:''}<div style="color:var(--g5);font-size:16px">›</div></div>
+      <div class="aa" onclick="go('sc-adm-admins')">  <div class="aa-ic">👥</div><div style="flex:1"><div class="aa-nm">Administradores</div><div class="aa-s">Gerenciar acessos</div></div><div style="color:var(--g5);font-size:16px">›</div></div>
+    </div>
+    <div class="adm-sec">Pedidos Recentes</div>
+    <div class="rods">${os.slice(0,4).map(o => `
+      <div class="ao" onclick="advOrd('${o.id}')">
+        <div class="ao-inf"><div class="ao-nm">${o.id} · ${o.client}</div><div class="ao-cl">${o.date} · R$ ${R(o.total)}</div></div>
+        <span class="tag ${ST_TAG[o.status]||'t-blue'}">${o.status}</span>
+      </div>`).join('')}
+    </div>`;
+}
+
+function advOrd(id) {
+  const ST=['Pendente','Confirmado','Enviado','Entregue'];
+  const os=getOrders(); const o=os.find(x=>x.id===id); if(!o)return;
+  const i=ST.indexOf(o.status);
+  if(i<ST.length-1){o.status=ST[i+1];S.s('orders',os);toast(`✅ ${id} → ${o.status}`);renderAdmin();}
+  else toast('📦 Pedido já entregue');
+}
+
+/* ═══════════════════════════════════════════════════
+   ADMIN PRODUCTS
+═══════════════════════════════════════════════════ */
+function renderAdmProds() {
+  const ps = getProds();
+  document.getElementById('adm-prods-body').innerHTML = ps.length
+    ? ps.map(p => `
+      <div class="apc">
+        <div class="apc-img ${p.bg}">${p.em}</div>
+        <div class="apc-inf">
+          <div class="apc-nm">${p.name}</div>
+          <div class="apc-cat">${p.cat}</div>
+          <div class="apc-pr">R$ ${R(p.price)}</div>
+        </div>
+        <div class="apc-acts">
+          <div class="apbtn" style="background:var(--blue3)"  onclick="editProd('${p.id}')">✏️</div>
+          <div class="apbtn" style="background:var(--redbg)"  onclick="delProd('${p.id}')">🗑️</div>
+        </div>
+      </div>`).join('')
+    : `<div class="empty"><div class="empty-ic">🛍️</div><div class="empty-h">Sem produtos</div></div>`;
+}
+
+function openAddProd() {
+  document.getElementById('addprod-title').textContent = 'Novo Produto';
+  document.getElementById('ap-save').textContent       = 'Cadastrar Produto';
+  document.getElementById('ap-id').value               = '';
+  ['ap-name','ap-price','ap-op','ap-em','ap-desc'].forEach(id => { const e=document.getElementById(id); if(e)e.value=''; });
+  pendingImgs = [];
+  const pg = document.getElementById('img-prev-grid'); if(pg) pg.innerHTML = '';
+  const inp = document.getElementById('ap-imgs'); if(inp) inp.value = '';
+  go('sc-adm-addprod');
+}
+
+function editProd(id) {
+  const p = getProds().find(x => x.id===id); if(!p)return;
+  document.getElementById('addprod-title').textContent = 'Editar Produto';
+  document.getElementById('ap-save').textContent       = 'Salvar Alterações';
+  document.getElementById('ap-id').value    = p.id;
+  document.getElementById('ap-name').value  = p.name;
+  document.getElementById('ap-price').value = p.price;
+  document.getElementById('ap-op').value    = p.op || '';
+  document.getElementById('ap-cat').value   = p.cat;
+  document.getElementById('ap-em').value    = p.em;
+  document.getElementById('ap-bg').value    = p.bg;
+  document.getElementById('ap-desc').value  = p.desc;
+  go('sc-adm-addprod');
+  setTimeout(() => {
+    initProdForm(p.stock);
+    pendingImgs = p.imgs ? [...p.imgs] : [];
+    renderImgPreviews();
+  }, 200);
+}
+
+function delProd(id) {
+  openMdl('Remover produto', `
+    <p style="font-size:14px;color:var(--g2);line-height:1.5;margin-bottom:16px">Tem certeza? Esta ação não pode ser desfeita.</p>
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-ghost btn-sm" style="flex:1" onclick="closeMdl()">Cancelar</button>
+      <button class="btn btn-red btn-sm" style="flex:1" onclick="cfDel('${id}')">Remover</button>
+    </div>`);
+}
+function cfDel(id) { S.s('products', getProds().filter(p=>p.id!==id)); closeMdl(); toast('🗑️ Produto removido'); renderAdmProds(); }
+
+function initProdForm(stk) {
+  const g = document.getElementById('stkg'); if(!g) return;
+  g.innerHTML = ['PP','P','M','G','GG'].map(s => `
+    <div class="stki">
+      <label>${s}</label>
+      <input id="aps-${s}" type="number" min="0" value="${stk ? (stk[s]||0) : 5}">
+    </div>`).join('');
+}
+
+/* ─── IMAGE UPLOAD HELPERS ─── */
+let pendingImgs = [];   // base64 strings accumulated while form is open
+
+function handleImgUpload(input) {
+  const files = Array.from(input.files);
+  if (!files.length) return;
+  const remaining = 5 - pendingImgs.length;
+  if (remaining <= 0) { toast('⚠️ Máximo de 5 fotos por produto', 't-orange'); return; }
+  const toLoad = files.slice(0, remaining);
+  let loaded = 0;
+  toLoad.forEach(file => {
+    const reader = new FileReader();
+    reader.onload = e => {
+      pendingImgs.push(e.target.result);
+      loaded++;
+      if (loaded === toLoad.length) renderImgPreviews();
+    };
+    reader.readAsDataURL(file);
+  });
+  // Reset input so same file can be re-added if needed
+  input.value = '';
+}
+
+function renderImgPreviews() {
+  const grid = document.getElementById('img-prev-grid');
+  if (!grid) return;
+  if (!pendingImgs.length) { grid.innerHTML = ''; return; }
+  grid.innerHTML = pendingImgs.map((src, i) => `
+    <div class="img-prev-item${i===0?' img-prev-main':''}">
+      <img src="${src}" alt="foto ${i+1}">
+      ${i===0 ? '<div class="img-main-badge">CAPA</div>' : ''}
+      <div class="img-prev-del" onclick="removeImg(${i})">✕</div>
+    </div>`).join('');
+}
+
+function removeImg(idx) {
+  pendingImgs.splice(idx, 1);
+  renderImgPreviews();
+}
+
+function saveProd() {
+  const salvarProduto = (prod) => {
+    let ps = getProds();
+    const idx = ps.findIndex(p=>p.id===prod.id);
+    if(idx>=0) ps[idx]=prod; else ps.unshift(prod);
+    S.s('products',ps);
+  };
+  const id    = document.getElementById('ap-id').value;
+  const name  = document.getElementById('ap-name').value.trim();
+  const price = parseFloat(document.getElementById('ap-price').value) || 0;
+  const op    = parseFloat(document.getElementById('ap-op').value) || null;
+  const cat   = document.getElementById('ap-cat').value;
+  const em    = document.getElementById('ap-em').value || '👗';
+  const bg    = document.getElementById('ap-bg').value;
+  const desc  = document.getElementById('ap-desc').value.trim() || 'Produto exclusivo da coleção AuraVest.';
+  if (!name || !price) { toast('⚠️ Preencha nome e preço'); return; }
+  const stock = {};
+  ['PP','P','M','G','GG'].forEach(s => { stock[s] = parseInt(document.getElementById('aps-'+s)?.value)||0; });
+  // collect uploaded images (pendingImgs array) or keep existing
+  const existingProd = id ? getProds().find(p=>p.id===id) : null;
+  const imgs = pendingImgs.length > 0 ? [...pendingImgs] : (existingProd?.imgs || []);
+  const prod = { id: id||('p'+Date.now()), name, price, op, cat, em, bg, desc, stock, stars:0, rev:0, colors:['#1a1a1a','#f0f0ec','#e8b4b8'], imgs };
+  salvarProduto(prod);
+  toast(id ? '✅ Produto atualizado!' : '✅ Produto cadastrado!');
+  bk();
+}
+
+/* ═══════════════════════════════════════════════════
+   ADMIN STOCK
+═══════════════════════════════════════════════════ */
+function renderAdmStock() {
+  const ps = getProds();
+  document.getElementById('adm-stock-body').innerHTML = ps.map(p => `
+    <div class="sk-card">
+      <div class="sk-nm">${p.em} ${p.name} <span class="tag t-blue" style="font-size:10px">${p.cat}</span></div>
+      <div class="sk-rows">${['PP','P','M','G','GG'].map(s => `
+        <div class="sk-row">
+          <span class="sk-rn">Tam. ${s}
+            ${(p.stock[s]||0)===0 ? `<span class="tag t-red"   style="font-size:9px">SEM ESTOQUE</span>` :
+              (p.stock[s]||0)<=2  ? `<span class="tag t-orange" style="font-size:9px">BAIXO</span>` : ''}
+          </span>
+          <div class="sqc">
+            <button class="sqb" onclick="updStk('${p.id}','${s}',-1)">−</button>
+            <div class="sqv" id="sq-${p.id}-${s}">${p.stock[s]||0}</div>
+            <button class="sqb" onclick="updStk('${p.id}','${s}',1)">+</button>
+          </div>
+        </div>`).join('')}
+      </div>
+    </div>`).join('');
+}
+
+function updStk(pid, sz, d) {
+  const ps=getProds(); const p=ps.find(x=>x.id===pid); if(!p)return;
+  p.stock[sz]=Math.max(0,(p.stock[sz]||0)+d); S.s('products',ps);
+  const el=document.getElementById(`sq-${pid}-${sz}`); if(el) el.textContent=p.stock[sz];
+  toast(`📦 ${p.name} ${sz}: ${p.stock[sz]} un.`);
+}
+
+/* ═══════════════════════════════════════════════════
+   ADMIN ALL ORDERS
+═══════════════════════════════════════════════════ */
+function renderAdmOrders() {
+  const os   = getOrders();
+  const body = document.getElementById('adm-orders-body'); if(!body)return;
+  if (!os.length) { body.innerHTML=`<div class="empty"><div class="empty-ic">🧾</div><div class="empty-h">Sem pedidos</div></div>`; return; }
+  body.innerHTML = os.map(o => `
+    <div class="oc">
+      <div class="oc-t"><div class="oc-id">${o.id} · ${o.client}</div><div class="oc-dt">${o.date}</div></div>
+      <div class="oc-its">${o.items.map(i=>`${i.name} (${i.sz||i.size}) ×${i.qty}`).join(' · ')}</div>
+      <div class="oc-b">
+        <div class="oc-vl">R$ ${R(o.total)}</div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <span class="tag ${ST_TAG[o.status]||'t-blue'}">${o.status}</span>
+          <button onclick="advAdmOrd('${o.id}')" style="background:var(--navy);color:#fff;border:none;border-radius:8px;padding:5px 10px;font-size:11px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">→ Avançar</button>
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+function advAdmOrd(id) {
+  const ST=['Pendente','Confirmado','Enviado','Entregue'];
+  const os=getOrders(); const o=os.find(x=>x.id===id); if(!o)return;
+  const i=ST.indexOf(o.status);
+  if(i<ST.length-1){o.status=ST[i+1];S.s('orders',os);toast(`✅ ${id} → ${o.status}`);renderAdmOrders();}
+  else toast('📦 Já entregue');
+}
+
+/* ═══════════════════════════════════════════════════
+   ADMIN MANAGE ADMINS
+═══════════════════════════════════════════════════ */
+function renderAdmAdmins() {
+  const admins = getAdmins();
+  const me     = (getUser()||{}).email || '';
+  document.getElementById('adm-admins-body').innerHTML = `
+    <div style="background:var(--blue3);border-radius:var(--r);padding:12px 14px;font-size:13px;color:var(--blue2);line-height:1.55;margin-bottom:14px;border:1px solid rgba(44,93,138,.15)">
+      🔐 Acesso restrito. Apenas administradores autorizados têm acesso a este painel.
+    </div>
+    <div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--g4);margin-bottom:9px">
+      Admins ativos (${admins.length})
+    </div>
+    ${admins.map(em => `
+      <div class="ali">
+        <div class="ali-av">${em[0].toUpperCase()}</div>
+        <div class="ali-inf">
+          <div class="ali-em">${em}</div>
+          <div class="ali-rl">${em.toLowerCase()===me.toLowerCase() ? 'Você · Administrador' : 'Administrador'}</div>
+        </div>
+        ${em.toLowerCase()!==me.toLowerCase()
+          ? `<div class="ali-del" onclick="rmAdm('${em}')">🗑️</div>`
+          : `<span class="tag t-blue" style="font-size:9px">VOCÊ</span>`}
+      </div>`).join('')}
+    <div style="margin-top:18px;border-top:1px solid var(--g5);padding-top:16px">
+      <div style="font-size:13px;font-weight:700;color:var(--g1);margin-bottom:11px">Adicionar administrador</div>
+      <div class="fg"><label class="fl">E-mail do novo admin</label><input class="fi" id="new-adm" type="email" placeholder="email@exemplo.com"></div>
+      <button class="btn btn-navy btn-sm" onclick="addAdmBtn()">+ Adicionar Admin</button>
+    </div>`;
+}
+
+function addAdmBtn() {
+  const em = (document.getElementById('new-adm')?.value||'').trim().toLowerCase();
+  if (!em || !em.includes('@')) { toast('⚠️ E-mail inválido'); return; }
+  addAdmin(em);
+  toast(`✅ ${em} adicionado como admin!`);
+  renderAdmAdmins();
+}
+
+function rmAdm(em) {
+  const me = (getUser()||{}).email||'';
+  if (em.toLowerCase()===me.toLowerCase()) { toast('⚠️ Não é possível remover a si mesmo'); return; }
+  openMdl('Remover administrador', `
+    <p style="font-size:14px;color:var(--g2);line-height:1.5;margin-bottom:16px">Remover <b>${em}</b>? Ele perderá acesso ao painel.</p>
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-ghost btn-sm" style="flex:1" onclick="closeMdl()">Cancelar</button>
+      <button class="btn btn-red btn-sm"   style="flex:1" onclick="cfRmAdm('${em}')">Remover</button>
+    </div>`);
+}
+function cfRmAdm(em) {
+  const a = getAdmins().filter(x => x.toLowerCase()!==em.toLowerCase());
+  S.s('admins', a); closeMdl(); toast(`🗑️ ${em} removido`); renderAdmAdmins();
+}
+
+/* ═══════════════════════════════════════════════════
+   BOOT
+═══════════════════════════════════════════════════ */
+function boot() {
+  initDB();
+  updCartBdg();
+  updNotifBdg();
+  syncBnav('sc-splash');
+  setTimeout(() => {
+    const u = getUser();
+    if (!u)                            { go('sc-login'); }
+    else if (!u.onboarded && !u.guest) { obStep=0; obSel={}; go('sc-ob'); renderOb(); }
+    else                               { goRoot('sc-home'); }
+  }, 2000);
+}
+
+boot();
+</script>
+</body>
+</html>
